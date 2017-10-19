@@ -35,10 +35,31 @@ contract CardTable {
 
   Game[] public games;
 
-  // global state variables
+  // global state variables with defaults where available
   address public owner;
-  uint256 numPlayers;
-  uint256 numRounds;
-  uint256 buyInAmount;
+  uint256 numPlayers = 3;
+  uint256 numRounds = 10;
+  uint256 buyInAmount = numRounds * 1 ether;
 
+  modifier onlyByOwner()
+	{
+		require(msg.sender == owner);
+		_;
+	}
+
+  function CardTable() {
+		owner = msg.sender;
+	}
+
+  function updateNumPlayers(uint256 _numPlayers) public onlyByOwner() {
+    numPlayers = _numPlayers;
+  }
+
+  function updateNumRounds(uint256 _numRounds) public onlyByOwner() {
+    numRounds = _numRounds;
+  }
+
+  function updateBuyInAmount(uint256 _buyInAmount) public onlyByOwner() {
+    buyInAmount = _buyInAmount;
+  }
 }
