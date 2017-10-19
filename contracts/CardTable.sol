@@ -1,6 +1,6 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.11;
 
-contract SimpleStorage {
+contract CardTable {
   uint storedData;
 
   function set(uint x) {
