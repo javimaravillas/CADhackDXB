@@ -1,91 +1,139 @@
 import React, { Component } from 'react'
 import SimpleStorageContract from '../build/contracts/SimpleStorage.json'
 import getWeb3 from './utils/getWeb3'
+import Peer from 'peerjs'
+import $ from 'jquery'
 
 import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
 
+
+var peer = new Peer({
+  host: '127.0.0.1',
+  port: 9000,
+  debug: 3,
+  logFunction: function() {
+    var copy = Array.prototype.slice.call(arguments).join(' ');
+    $('.log').append(copy + '<br>');
+  }
+});
+peer.on('error', function(err) {
+  console.log(err);
+})
+
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      storageValue: 0,
-      web3: null
+      peerId: '',
+      round: 1,
+      numPlayers: 3,
+      numbers: {},
+      connectedPeers: {}
     }
   }
 
   componentWillMount() {
-    // Get network provider and web3 instance.
-    // See utils/getWeb3 for more info.
-
-    getWeb3
-    .then(results => {
-      this.setState({
-        web3: results.web3
+    // Show this peer's ID.
+    var self = this
+    peer.on('open', (id) => {
+      self.setState({
+        'peerId': id
       })
-
-      // Instantiate contract once web3 provided.
-      this.instantiateContract()
-    })
-    .catch(() => {
-      console.log('Error finding web3.')
-    })
+    });
+    // Await connections from others
+    peer.on('connection', (c) => this.connect(c));
   }
 
   instantiateContract() {
-    /*
-     * SMART CONTRACT EXAMPLE
-     *
-     * Normally these functions would be called in the context of a
-     * state management library, but for convenience I've placed them here.
-     */
 
-    const contract = require('truffle-contract')
-    const simpleStorage = contract(SimpleStorageContract)
-    simpleStorage.setProvider(this.state.web3.currentProvider)
+  }
 
-    // Declaring this for later so we can chain functions on SimpleStorage.
-    var simpleStorageInstance
-
-    // Get accounts.
-    this.state.web3.eth.getAccounts((error, accounts) => {
-      simpleStorage.deployed().then((instance) => {
-        simpleStorageInstance = instance
-
-        // Stores a given value, 5 by default.
-        return simpleStorageInstance.set(5, {from: accounts[0]})
-      }).then((result) => {
-        // Get the value from the contract to prove it worked.
-        return simpleStorageInstance.get.call(accounts[0])
-      }).then((result) => {
-        // Update state with the result.
-        return this.setState({ storageValue: result.c[0] })
+  seeIfGameFinished() {
+    const numbers = this.state.get('numbers')
+    if(Object.keys(numbers).length === 3) {
+      var highestNum = 0;
+      var winner = 0;
+      Object.keys(this.state.get('numbers')).forEach(function(peerId) {
+        if(numbers[peerId] > highestNum) {
+            highestNum = numbers[peerId];
+            winner = peerId;
+        }
       })
+      alert(`Game finished. ${winner} wins with number ${highestNum}`);
+    }
+  }
+
+  connect(c) {
+    // Handle a chat connection.
+    if (c.label === 'chat') {
+      var chatbox = $('<div></div>').addClass('connection').addClass('active').attr('id', c.peer);
+      var header = $('<h1></h1>').html('Chat with <strong>' + c.peer + '</strong>');
+      var messages = $('<div><em>Peer connected.</em></div>').addClass('messages');
+      chatbox.append(header);
+      chatbox.append(messages);
+
+      // Select connection handler.
+      chatbox.on('click', function() {
+        if ($(this).attr('class').indexOf('active') === -1) {
+          $(this).addClass('active');
+        } else {
+          $(this).removeClass('active');
+        }
+      });
+      $('.filler').hide();
+      $('#connections').append(chatbox);
+
+      c.on('data', function(data) {
+        var num = parseInt(data);
+        var numbers = this.state.get('numbers')
+        numbers[c.peer] = num;
+        this.setState({
+          'numbers': numbers
+        })
+        this.seeIfGameFinished();
+
+      messages.append('<div><span class="peer">' + c.peer + '</span>: ' + data +
+        '</div>');
+      });
+
+      c.on('close', function() {
+        alert(c.peer + ' has left.');
+        chatbox.remove();
+        if ($('.connection').length === 0) {
+          $('.filler').show();
+        }
+        var connectedPeers = this.state.get('connectedPeers')
+        delete connectedPeers[c.peer];
+        this.setState({
+          'connectedPeers': connectedPeers
+        })
+      });
+    }
+    var connectedPeers = this.state.get('connectedPeers')
+    connectedPeers[c.peer] = 1
+    this.setState({
+      'connectedPeers': connectedPeers
     })
   }
 
   render() {
     return (
-      <div className="App">
-        <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" className="pure-menu-heading pure-menu-link">Truffle Box</a>
-        </nav>
-
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Good to Go!</h1>
-              <p>Your Truffle Box is installed and ready.</p>
-              <h2>Smart Contract Example</h2>
-              <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
-              <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
-              <p>The stored value is: {this.state.storageValue}</p>
-            </div>
-          </div>
-        </main>
+      <div id="actions">
+        Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
+        <br/>
+        Connect to a peer: <input type="text" id="rid" placeholder="Someone else's id"></input>
+        <button class="connect" id="connect">Connect</button>
+        <form id="send">
+          <input type="text" id="text" placeholder="Enter number"></input>
+          <button type="submit" >Send</button>
+        </form>
+        <div id="connections">
+          <span class="filler">You have not yet made any connections.</span>
+        </div>
       </div>
     );
   }
