@@ -41,6 +41,15 @@ contract CardTable {
   uint256 numRounds = 10;
   uint256 buyInAmount = numRounds * 1 ether;
 
+  event WaitingForGame(address playerAccount, uint256 buyInAmount, uint256 balance);
+	event ErrorJoiningGame(address playerAccount, uint256 buyInAmount, uint256 balance);
+  event ConnectToGame(address playerAccount, uint256 gameId, address nextPeer, address prevPeer);
+  event PaidWinner(address playerAccount, uint256 gameId, uint256 roundNum, uint256 payoutAmount);
+  event PlayerTimeout(address playerAccount, address notifierAccount, uint256 gameId, uint256 roundNum);
+  event GameTimeout(address notifierAccount, uint256 gameId);
+  event PayoutTimeout(uint256 gameId, uint256 roundNum, uint256 payoutAmount);
+  event GameFinished(uint256 gameId);
+
   modifier onlyByOwner()
 	{
 		require(msg.sender == owner);
