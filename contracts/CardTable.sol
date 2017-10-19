@@ -5,7 +5,6 @@ contract CardTable {
   struct Player {
 		address account;
 		string name;
-		uint256 balance;
     uint256 gamesPlayed;
     uint256 gamesWon;
     uint256 gamesLost;
@@ -41,8 +40,10 @@ contract CardTable {
   uint256 numRounds = 10;
   uint256 buyInAmount = numRounds * 1 ether;
 
-  event WaitingForGame(address playerAccount, uint256 buyInAmount, uint256 balance);
-	event ErrorJoiningGame(address playerAccount, uint256 buyInAmount, uint256 balance);
+  Game nextGame;
+
+  event WaitingForGame(address playerAccount, uint256 buyInAmount);
+	event ErrorJoiningGame(address playerAccount, uint256 buyInAmount);
   event ConnectToGame(address playerAccount, uint256 gameId, address nextPeer, address prevPeer);
   event PaidWinner(address playerAccount, uint256 gameId, uint256 roundNum, uint256 payoutAmount);
   event PlayerTimeout(address playerAccount, address notifierAccount, uint256 gameId, uint256 roundNum);
@@ -70,5 +71,11 @@ contract CardTable {
 
   function updateBuyInAmount(uint256 _buyInAmount) public onlyByOwner() {
     buyInAmount = _buyInAmount;
+  }
+
+  function joinGame() public payable {
+    require(msg.value >= buyInAmount);
+
+    
   }
 }
