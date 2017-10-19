@@ -1,13 +1,44 @@
 pragma solidity ^0.4.11;
 
 contract CardTable {
-  uint storedData;
+  // player
+  struct Player {
+		address account;
+		string name;
+		uint256 balance;
+    uint256 gamesPlayed;
+    uint256 gamesWon;
+    uint256 gamesLost;
+    uint256 gamesAborted;
+    bool inAGame;
+	}
 
-  function set(uint x) {
-    storedData = x;
+  mapping (address => uint256) public addressToPlayer;
+  Player[] public players;
+
+  // round of play within a game
+  struct Round {
+    address winner;
+    uint256 winAmount;
+    bool paidOut;
   }
 
-  function get() constant returns (uint) {
-    return storedData;
-  }
+  // game composed of players and rounds
+  struct Game {
+    uint256 id;
+    uint256 numPlayers;
+    uint256 numRounds;
+    uint256 buyInAmount;
+		Player[] players;
+    Round[] rounds;
+	}
+
+  Game[] public games;
+
+  // global state variables
+  address public owner;
+  uint256 numPlayers;
+  uint256 numRounds;
+  uint256 buyInAmount;
+
 }
