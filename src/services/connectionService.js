@@ -7,28 +7,32 @@ const ConnectionService = () =>{
     const connectedPeers = {};
     
     function setup(address) {
-        peer = new Peer(address, {
-	    host: '10.0.212.83',
-	    port: 9000,
-	    debug: 3,
-	    logFunction: function() {
-                var copy = Array.prototype.slice.call(arguments).join(' ');
-		console.log(copy);
-                //$('.log').append(copy + '<br>');		
-	    }
-        });
-        peer.on('error', function(err) {
-	    console.log(err);
-        });
-        peer.on('open', (id) => {
-	    console.log('open', {id});
-        });
-
-	// Await connections from others
-        peer.on('connection', (c) => {
-	    console.log('connection', c);
-	    this.connect(c);
-	});	    		
+	return new Promise((resolve, reject) => {
+            peer = new Peer(address, {
+		host: '10.0.212.79',
+		port: 9000,
+		debug: 3,
+		logFunction: function() {
+                    var copy = Array.prototype.slice.call(arguments).join(' ');
+		    console.log(copy);
+                    //$('.log').append(copy + '<br>');		
+		}
+            });
+            peer.on('error', function(err) {
+		console.log(err);
+		reject(err);
+            });
+            peer.on('open', (id) => {
+		console.log('open', {id});
+		resolve(id);
+            });
+	    
+	    // Await connections from others
+            peer.on('connection', (c) => {
+		console.log('connection', c);
+		this.connect(c);
+	    });
+	});
     }
 
   function connect(peerId) {
