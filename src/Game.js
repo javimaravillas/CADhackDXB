@@ -55,7 +55,7 @@ class GameApp extends Component {
     
     sendMessage() {
 	this.props.connections.map((connection, index) => {
-	    connectionService.send(connection,  { card: Math.random });
+	    connectionService.send(connection,  { card: Math.random() });
 	})
     }
 
