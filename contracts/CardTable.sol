@@ -97,13 +97,15 @@ contract CardTable {
     // player cannot already be registered
     require(!playerExists(msg.sender));
 
-    p memory Player = Player(msg.sender, name);
+    Player memory p = Player(msg.sender, name);
 
     // update index mapping and players array in one step, saving on gas
     addressToPlayer[msg.sender] = players.push(p) - 1;
-		id = players.length - 1;
+		uint256 id = players.length - 1;
 
 		RegisteredPlayer(id, msg.sender, name);
+
+    return true;
   }
 
   function joinGame() public payable returns(bool success) {
