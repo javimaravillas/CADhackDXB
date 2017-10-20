@@ -53,9 +53,13 @@ class GameApp extends Component {
     const playerAddresses = [
       "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
       "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
-    playerAddresses.forEach((address)=> {
+    playerAddresses.forEach((address) => {
       if(address !== this.state.peerId) {
-        connectionService.connect(address).then(() => {
+        const callbacks = {
+          afterOpen: () => this.props.updateConnectedPeers(),
+          afterData: (addr, data) => this.handleData(addr, data)
+        }
+        connectionService.connect(address, callbacks).then(() => {
           this.props.updateConnectedPeers(address);
         });
       }
@@ -75,6 +79,18 @@ class GameApp extends Component {
     }
   }
 
+  checkEndGame() {
+    if (this.isRoundOver()) {
+      const winner = this.calculateWinner()
+      // refactor to remove self !!!
+      this.props.connections.map(address =>
+        connectionService.send(address, {winner: winner}))
+      this.endRound(winner)
+    } else {
+      console.log(this.state.peers)
+    }
+  }
+
   isMaster() {
     return this.state.master === this.state.peerId
   }
@@ -86,14 +102,19 @@ class GameApp extends Component {
       this.setState({
         peers: peers
       })
+      this.checkEndGame()
+    } else {
+      connectionService.send(this.state.master, { card: Math.random() })
     }
-    connectionService.send(this.state.master, { card: Math.random() })
   }
 
   isRoundOver() {
-    return Array.prototype.every(this.props.connections.map(address =>
+    const playerAddresses = [
+      "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
+      "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
+    return playerAddresses.map(address =>
       this.state.peers[address] !== undefined
-    ))
+    ).every(b => b)
   }
 
   calculateWinner() {
@@ -118,12 +139,7 @@ class GameApp extends Component {
     this.setState({
       peers: peers
     })
-    if (this.isRoundOver()) {
-      const winner = this.calculateWinner()
-      this.props.connections.map(address =>
-        connectionService.send(address, {winner: winner}))
-      this.endRound(winner)
-    }
+    this.checkEndGame()
   }
 
   render() {

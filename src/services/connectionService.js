@@ -44,7 +44,7 @@ const ConnectionService = () =>{
         console.log("connected to: ", connection.peer);
         connectedPeers[connection.peer] = connection;
         connection.on('data', (value) => {
-          console.log('data', JSON.stringify({value}));
+          console.log('data', JSON.stringify(value));
           if(callbacks.afterData) {
             callbacks.afterData(connection.peer, value);
           }
@@ -54,9 +54,10 @@ const ConnectionService = () =>{
         }
       });
     }
+    callbacks.resolve()
   }
 
-  function connect(peerId) {
+  function connect(peerId, callbacks) {
     // Handle a chat connection.
     return new Promise((resolve, reject) => {
       if (!connectedPeers[peerId]) {
@@ -66,7 +67,8 @@ const ConnectionService = () =>{
           serialization: 'json',
           metadata: {message: 'join game request'}
         });
-        configureConnection(c, resolve);
+        callbacks.resolve = resolve
+        configureConnection(c, callbacks);
       } else {
         console.log("already connected!", peerId);
       }
