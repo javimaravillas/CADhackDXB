@@ -1,6 +1,4 @@
 import React, { Component } from 'react'
-import SimpleStorageContract from '../build/contracts/SimpleStorage.json'
-import getWeb3 from './utils/getWeb3'
 import Peer from 'peerjs'
 import $ from 'jquery'
 
@@ -88,7 +86,7 @@ class App extends Component {
       $('#connections').append(chatbox);
 
       c.on('data', function(data) {
-        var num = parseInt(data);
+        var num = parseInt(data, 10);
         var numbers = this.state.get('numbers')
         numbers[c.peer] = num;
         this.setState({
@@ -126,13 +124,13 @@ class App extends Component {
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
         Connect to a peer: <input type="text" id="rid" placeholder="Someone else's id"></input>
-        <button class="connect" id="connect">Connect</button>
+      <button className="connect" id="connect">Connect</button>
         <form id="send">
           <input type="text" id="text" placeholder="Enter number"></input>
           <button type="submit" >Send</button>
         </form>
         <div id="connections">
-          <span class="filler">You have not yet made any connections.</span>
+          <span className="filler">You have not yet made any connections.</span>
         </div>
       </div>
     );
