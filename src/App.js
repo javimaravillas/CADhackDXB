@@ -1,25 +1,14 @@
 import React, { Component } from 'react'
 import Peer from 'peerjs'
 import $ from 'jquery'
+import getWeb3 from './utils/getWeb3'
 
 import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
 
-
-var peer = new Peer({
-  host: '10.0.212.83',
-  port: 9000,
-  debug: 3,
-  logFunction: function() {
-    var copy = Array.prototype.slice.call(arguments).join(' ');
-    $('.log').append(copy + '<br>');
-  }
-});
-peer.on('error', function(err) {
-  console.log(err);
-})
+var peer; 
 
 class App extends Component {
   constructor(props) {
@@ -35,15 +24,38 @@ class App extends Component {
   }
 
   componentWillMount() {
-    // Show this peer's ID.
-    var self = this
-    peer.on('open', (id) => {
-      self.setState({
-        'peerId': id
-      })
+    getWeb3.then(results => {
+      this.setState({
+        web3: results.web3
+      });
+      results.web3.eth.getAccounts((error, accounts) => {
+          if(error) {
+            console.log(error);
+          } else {
+            peer = new Peer(accounts[0], {
+              host: '10.0.212.83',
+              port: 9000,
+              debug: 3,
+              logFunction: function() {
+                var copy = Array.prototype.slice.call(arguments).join(' ');
+                $('.log').append(copy + '<br>');
+              }
+            });
+            peer.on('error', function(err) {
+              console.log(err);
+            });
+            peer.on('open', (id) => {
+              this.setState({
+                'peerId': id
+              });
+            });
+            // Await connections from others
+            peer.on('connection', (c) => this.connect(c));
+          }
+      });
+    }).catch(() => {
+      console.log('Error finding web3.')
     });
-    // Await connections from others
-    peer.on('connection', (c) => this.connect(c));
   }
 
   instantiateContract() {
