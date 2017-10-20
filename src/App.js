@@ -67,23 +67,24 @@ class App extends Component {
   //   }
   // }
 
-    connect(peerId) {
-	connectionService.connect(peerId);
+    connect() {
+	connectionService.connect(this.state.connectTo);
     }
     
 
   render() {
     let connections = []
     for (let name in this.state.connectedPeers) {
-      connections.push(<li key="{name}">{name}</li>)
+	connections.push(<li key="{name}">{name}</li>);
     }
     return (
       <div id="actions">
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
-        Connect to a peer: <input type="text" id="rid"
+            Connect to a peer: <input type="text" id="rid"
+	onChange={(e) => this.setState({connectTo: e.target.value}) }
           placeholder="Someone else's id"></input>
-        <button className="connect" id="connect" onClick={(e) => this.connect(e.target.value)}>Connect</button>
+        <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
         {connections.length ? <button className="get-card">Deal a card</button>: ""}
         <div id="gameInfo">
           <div> Round: { this.state.round } </div>
