@@ -9,7 +9,7 @@ import './App.css'
 
 
 var peer = new Peer({
-  host: '127.0.0.1',
+  host: '10.0.212.83',
   port: 9000,
   debug: 3,
   logFunction: function() {
