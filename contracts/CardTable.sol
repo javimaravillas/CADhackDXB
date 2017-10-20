@@ -40,8 +40,9 @@ contract CardTable {
   uint256 numRounds = 10;
   uint256 buyInAmount = numRounds * 1 ether;
 
-  Game nextGame;
+  Game nextGame;  // game waiting to be filled with players
 
+  // events
   event WaitingForGame(address playerAccount, uint256 buyInAmount);
 	event ErrorJoiningGame(address playerAccount, uint256 buyInAmount);
   event ConnectToGame(address playerAccount, uint256 gameId, address nextPeer, address prevPeer);
@@ -51,12 +52,14 @@ contract CardTable {
   event PayoutTimeout(uint256 gameId, uint256 roundNum, uint256 payoutAmount);
   event GameFinished(uint256 gameId);
 
+  // modifiers
   modifier onlyByOwner()
 	{
 		require(msg.sender == owner);
 		_;
 	}
 
+  // constructor and functions
   function CardTable() {
 		owner = msg.sender;
 	}
@@ -76,6 +79,6 @@ contract CardTable {
   function joinGame() public payable {
     require(msg.value >= buyInAmount);
 
-    
+
   }
 }
