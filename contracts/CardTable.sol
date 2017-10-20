@@ -54,7 +54,7 @@ contract CardTable {
 
   // events
   event RegisteredPlayer(uint256 playerId, address playerAccount, string name);
-  event WaitingForGame(uint256 gameId, address playerAccount, uint256 buyInAmount);
+  event WaitingForGame(uint256 gameId, address playerAccount, uint256 boughtInAmount);
   event GameStarting(uint256 gameId, address playerAccount, address nextPeer, address prevPeer);
   event WinSubmitted(uint256 gameId, uint256 roundNum, address winnerAccount, uint256 payoutAmount);
   event ClaimedInvalid(uint256 gameId, uint256 roundNum, address invalidAccount, address notifierAccount);
@@ -157,7 +157,7 @@ contract CardTable {
     // player cannot already be registered
     require(!playerExists(msg.sender));
 
-    Player p = Player(msg.sender, name);
+    Player storage p = Player(msg.sender, name);
 
     // update index mapping and players array in one step, saving on gas
     addressToPlayer[msg.sender] = players.push(p) - 1;
@@ -199,8 +199,8 @@ contract CardTable {
 
   // create a new, blank game (typically nextGame)
   function newGame() private returns(Game g) {
-    Player[] ps;
-    Round[] rs;
+    Player[] storage ps;
+    Round[] storage rs;
 
     uint256 roundPayoutAmount = buyInAmount / numPlayers;
 
@@ -275,10 +275,9 @@ contract CardTable {
     require(!games[gameId].rounds[roundNum].winSubmitted);
     require(!games[gameId].rounds[roundNum].cancelled);
 
-    // initialize round proofs array, one for each player, with blank proofs
-    RoundProof[] prs;
+    RoundProof[] storage prs;
 
-    Round r = Round(msg.sender, true, false, false, false, false, prs);
+    Round storage r = Round(msg.sender, true, false, false, false, false, prs);
     games[gameId].rounds[roundNum] = r;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
@@ -345,7 +344,7 @@ contract CardTable {
     }
 
     // insert the proof
-    RoundProof pr = RoundProof(playerAccount, random);
+    RoundProof storage pr = RoundProof(playerAccount, random);
     games[gameId].rounds[roundNum].proofs.push(pr);
 
     SubmittedRoundResult(gameId, roundNum, playerAccount, msg.sender, random);
