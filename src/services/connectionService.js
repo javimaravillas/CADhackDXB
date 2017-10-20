@@ -46,7 +46,9 @@ const ConnectionService = () =>{
                 connection.on('data', (value) => {
                     console.log('data', {value});
                 });
-                callback();
+                if(callback) {
+                    callback();                    
+                }
             });
     }
 }
