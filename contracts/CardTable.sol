@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.15;
 
 contract CardTable {
   // player
@@ -101,7 +101,7 @@ contract CardTable {
     // player cannot already be registered
     require(!playerExists(msg.sender));
 
-    Player memory p = Player(msg.sender, name);
+    Player p = Player(msg.sender, name);
 
     // update index mapping and players array in one step, saving on gas
     addressToPlayer[msg.sender] = players.push(p) - 1;
