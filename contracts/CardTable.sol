@@ -21,6 +21,14 @@ contract CardTable {
     bool winSubmitted;
     bool paidOut;
     bool invalidClaim;
+    bool provenValid;
+    RoundProof[] proofs;
+  }
+
+  // TODO: replace rand with cross-signed hashed proofs
+  struct RoundProof {
+    address account;
+    uint256 rand;
   }
 
   // game composed of players and rounds
@@ -262,9 +270,10 @@ contract CardTable {
     returns(bool success)
   {
     require(!games[gameId].rounds[roundNum].winSubmitted);
-    require(!games[gameId].rounds[roundNum].paidOut);
 
-    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false);
+    RoundProof[] pr;
+
+    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false, false, pr);
     games[gameId].rounds[roundNum] = r;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
@@ -281,6 +290,7 @@ contract CardTable {
     require(invalidAccount != msg.sender);
     require(!games[gameId].rounds[roundNum].paidOut);
     require(!games[gameId].rounds[roundNum].invalidClaim);
+    require(!games[gameId].rounds[roundNum].provenValid);
 
     games[gameId].rounds[roundNum].invalidClaim = true;
 
@@ -300,6 +310,10 @@ contract CardTable {
     onlyByPlayerForRound(gameId, roundNum)
     returns(bool success)
   {
+    require(playerInGame(gameId, playerAccount));
+    require(!games[gameId].rounds[roundNum].paidOut);
+    require(!games[gameId].rounds[roundNum].invalidClaim);
+    require(!games[gameId].rounds[roundNum].provenValid);
 
     SubmittedRoundResult(gameId, roundNum, playerAccount, msg.sender, random);
 
