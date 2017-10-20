@@ -29,6 +29,7 @@ contract CardTable {
   struct RoundProof {
     address account;
     uint256 rand;
+    bool provenValid;
   }
 
   // game composed of players and rounds
@@ -271,9 +272,14 @@ contract CardTable {
   {
     require(!games[gameId].rounds[roundNum].winSubmitted);
 
-    RoundProof[] pr;
+    // initialize round proofs array, one for each player, with blank proofs
+    RoundProof[] prs;
+    for (uint i = 0; i < games[gameId].numPlayers; i++) {
+      RoundProof pr;
+      prs.push(pr);
+    }
 
-    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false, false, pr);
+    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false, false, prs);
     games[gameId].rounds[roundNum] = r;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
@@ -312,8 +318,10 @@ contract CardTable {
   {
     require(playerInGame(gameId, playerAccount));
     require(!games[gameId].rounds[roundNum].paidOut);
-    require(!games[gameId].rounds[roundNum].invalidClaim);
+    require(games[gameId].rounds[roundNum].invalidClaim);
     require(!games[gameId].rounds[roundNum].provenValid);
+
+
 
     SubmittedRoundResult(gameId, roundNum, playerAccount, msg.sender, random);
 
