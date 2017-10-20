@@ -51,12 +51,12 @@ contract('CardTable', function(accounts) {
     });
   });
 
-  it("three players should join a game and the game should start", function() {
-    return contract.joinGame({from: u.p0, value: buyInAmount})
-    .then(function(txn) {
-      // check that an exception wasn't thrown
-      assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, joinGame() threw an exception.");
-    });
-  });
+  // it("three players should join a game and the game should start", function() {
+  //   return contract.joinGame({from: u.p0, value: buyInAmount})
+  //   .then(function(txn) {
+  //     // check that an exception wasn't thrown
+  //     assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, joinGame() threw an exception.");
+  //   });
+  // });
 
 });
