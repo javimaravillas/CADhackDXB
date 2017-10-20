@@ -17,7 +17,8 @@ contract CardTable {
   // round of play within a game
   struct Round {
     address winner;
-    uint256 winAmount;
+    uint256 payoutAmount;
+    bool winSubmitted;
     bool paidOut;
   }
 
@@ -27,6 +28,7 @@ contract CardTable {
     uint256 numPlayers;
     uint256 numRounds;
     uint256 buyInAmount;
+    uint256 roundPayoutAmount;
 		Player[] players;
     Round[] rounds;
 	}
@@ -45,7 +47,7 @@ contract CardTable {
   event RegisteredPlayer(uint256 playerId, address playerAccount, string name);
   event WaitingForGame(uint256 gameId, address playerAccount, uint256 buyInAmount);
   event GameStarting(uint256 gameId, address playerAccount, address nextPeer, address prevPeer);
-  event PaidWinner(uint256 gameId, address playerAccount, uint256 roundNum, uint256 payoutAmount);
+  event WinSubmitted(uint256 gameId, uint256 roundNum, address winnerAccount, uint256 payoutAmount);
   event PlayerTimeout(uint256 gameId, address playerAccount, address notifierAccount, uint256 roundNum);
   event GameTimeout( uint256 gameId, address notifierAccount);
   event PayoutTimeout(uint256 gameId, uint256 roundNum, uint256 payoutAmount);
@@ -78,6 +80,40 @@ contract CardTable {
     require(_buyInAmount > numPlayers); // to ensure easy divisibility
     buyInAmount = _buyInAmount;
   }
+
+  // check if this game exists
+	function gameExists(uint256 gameId)
+		public
+		constant
+		returns(bool exists)
+	{
+		if (games.length == 0) {
+			return false;
+		}
+
+		if (games[gameId].id == gameId) {
+			return true;
+		}
+
+		return false;
+	}
+
+  // check if a round exists for a given game
+	function roundExists(uint256 gameId, uint256 roundNum)
+		public
+		constant
+		returns(bool exists)
+	{
+    if (!gameExists(gameId)) {
+      return false;
+    }
+
+    if (roundNum < games[gameId].numRounds) {
+      return true;
+    }
+
+    return false;
+	}
 
   // check if this player exists
 	function playerExists(address playerAccount)
@@ -113,8 +149,32 @@ contract CardTable {
   }
 
   // retrieve a player from the registry
-  function getPlayer(address playerAccount) private returns(Player p) {
+  function getPlayer(address playerAccount) private constant returns(Player p) {
     return players[addressToPlayer[playerAccount]];
+  }
+
+  // check if a player is in a game
+  function playerInGame(uint256 gameId, address playerAccount) private constant returns(bool exists) {
+    for (uint i = 0; i < games[gameId].players.length; i++) {
+      if (games[gameId].players[i].account == playerAccount) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // check if a player is in the next game
+  // probably could be generalized with playerInGame(), but would require
+  // refactoring how nextGame is handled
+  function playerInNextGame(address playerAccount) private constant returns(bool exists) {
+    for (uint i = 0; i < nextGame.players.length; i++) {
+      if (nextGame.players[i].account == playerAccount) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // create a new, blank game (typically nextGame)
@@ -122,9 +182,11 @@ contract CardTable {
     Player[] ps;
     Round[] rs;
 
+    uint256 roundPayoutAmount = buyInAmount / numPlayers;
+
     // note that gameId will be initialized to 0, but must be set correctly 
     // when game is added to games array
-    g = Game(0, numPlayers, numRounds, buyInAmount, ps, rs);
+    g = Game(0, numPlayers, numRounds, buyInAmount, roundPayoutAmount, ps, rs);
 
     return g;
   }
@@ -142,6 +204,7 @@ contract CardTable {
   function joinGame() public payable returns(bool success) {
     require(msg.value == buyInAmount);
     require(playerExists(msg.sender));
+    require(!playerInNextGame(msg.sender));
 
     // add to nextGame
     Player memory p = getPlayer(msg.sender);
@@ -179,5 +242,20 @@ contract CardTable {
     }
 
     return true;
+  }
+
+  // called by the winner of a round to claim the win
+  // can be challenged by the other players
+  // TODO: winner must stake a certain amount of Ether against the claim
+  function submitWin(uint256 gameId, uint256 roundNum) public {
+    require(roundExists(gameId, roundNum)); // will also verify that game exists
+    require(playerInGame(gameId, msg.sender));
+    require(!games[gameId].rounds[roundNum].winSubmitted);
+    require(!games[gameId].rounds[roundNum].paidOut);
+
+    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false);
+    games[gameId].rounds[roundNum] = r;
+
+    WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
   }
 }
