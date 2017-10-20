@@ -4,7 +4,6 @@
 const GameService = () => {
 
     const currentRoundId;
-    const 
     
     function joinGame(name) {	
 	// 1. send deposit to smart-contract with name
