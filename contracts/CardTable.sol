@@ -272,7 +272,7 @@ contract CardTable {
     return true;
   }
 
-  function claimInvalidWin(uint256 gameId, uint256 roundNum, address invalidAccount)
+  function claimInvalid(uint256 gameId, uint256 roundNum, address invalidAccount)
     public
     onlyByPlayerForRound(gameId, roundNum)
     returns(bool success)
