@@ -28,9 +28,9 @@ class GameApp extends Component {
           if(error) {
             console.log(error);
           } else {	      
-	      connectionService.setup(accounts[0]).then((id) => {
+	      connectionService.setup(accounts[0], this.props.updateConnectedPeers).then((id) => {
 		  this.setState({
-                      'peerId': id,
+            'peerId': id,
 		      connected: true		      
 		  });
 	      });
@@ -42,14 +42,20 @@ class GameApp extends Component {
   }
 
     connect() {
-	connectionService.connect(this.state.connectTo).then(() => {
-	    this.props.connect(this.state.connectTo);
-	});
+        const playerAddresses = ["0xa3fce31fc0f89bdf7e52284d389ead28dfce81be", "0x711b926dad3bf4a5aec55f3283275e2ae3931298", "0x7D4917388E9a304B01a6A1C2E62b601684C7a825"];
+        playerAddresses.forEach((address)=> {
+            if(address !== this.state.peerId) {
+                connectionService.connect(address).then(() => {
+                    this.props.updateConnectedPeers(address);
+                });
+            }
+        });
+
     }
     
     sendMessage() {
 	this.props.connections.map((connection, index) => {
-	    connectionService.send(connection,  "hello, world!");
+	    connectionService.send(connection,  { card: Math.random });
 	})
     }
 
@@ -70,7 +76,7 @@ class GameApp extends Component {
           placeholder="Someone else's id"></input>
             <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
 	    { connections }
-        {connections.length ? <button onClick={() => this.sendMessage()} className="get-card">Deal a card</button>: ""}
+        { connections.length ? <button onClick={() => this.sendMessage()} className="get-card">Deal a card</button>: ""}
       </div>
     );
   }
@@ -85,7 +91,7 @@ const mapStateToProps = (store) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-	connect: (payload) => dispatch({type: "GOT_NEW_CONNECTION", payload})
+        updateConnectedPeers: (payload) => dispatch({type: "GOT_NEW_CONNECTION", payload})
     };
 }
 

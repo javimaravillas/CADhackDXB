@@ -6,9 +6,9 @@ const ConnectionService = () =>{
     let peer;
     const connectedPeers = {};
     
-    function setup(address) {
+    function setup(address, connectedPeersCallback) {
 	return new Promise((resolve, reject) => {
-            peer = new Peer(address, {
+        peer = new Peer(address, {
 		host: '10.0.212.79',
 		port: 9000,
 		debug: 3,
@@ -28,9 +28,9 @@ const ConnectionService = () =>{
             });
 	    
 	    // Await connections from others
-            peer.on('connection', (c) => {
+        peer.on('connection', (c) => {
             console.log('connection', c);
-            configureConnection(c, resolve);
+            configureConnection(c, connectedPeersCallback);
 	    });
 	});
     }
@@ -47,7 +47,7 @@ const ConnectionService = () =>{
                     console.log('data', {value});
                 });
                 if(callback) {
-                    callback();                    
+                    callback(connection.peer);                    
                 }
             });
     }
@@ -62,9 +62,9 @@ const ConnectionService = () =>{
 		  serialization: 'none',
 		  metadata: {message: 'join game request'}
 	      });
-          configureConnection(c);
+          configureConnection(c, resolve);
 	  } else {
-	      alert("already connected!", peerId);
+	      console.log("already connected!", peerId);
 	  }
       });
   }
