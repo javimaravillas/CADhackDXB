@@ -13,7 +13,7 @@ Javier Franco (mentor)
 ### Development
 
 ```
-  git clone https://github.com/javimaravillas/CADhackDXB.git/
+git clone https://github.com/javimaravillas/CADhackDXB.git/
 ```
 ```
 npm install
