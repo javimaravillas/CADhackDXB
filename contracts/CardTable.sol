@@ -96,6 +96,7 @@ contract CardTable {
 		return false;
 	}
 
+  // register a player
   function registerPlayer(string name) public returns(bool success) {
     // player cannot already be registered
     require(!playerExists(msg.sender));
@@ -111,10 +112,12 @@ contract CardTable {
     return true;
   }
 
+  // retrieve a player from the registry
   function getPlayer(address playerAccount) private returns(Player p) {
     return players[addressToPlayer[playerAccount]];
   }
 
+  // create a new, blank game (typically nextGame)
   function newGame() private returns(Game g) {
     Player[] ps;
     Round[] rs;
@@ -126,6 +129,7 @@ contract CardTable {
     return g;
   }
 
+  // add a game (typically nextGame) to the games array
   function addGame(Game g) private returns(bool success) {
     // retrieve id as part of array addition to save on gas
     uint256 id = games.push(g) - 1;
@@ -134,6 +138,7 @@ contract CardTable {
     return true;
   }
 
+  // called by a player who wishes to join a game
   function joinGame() public payable returns(bool success) {
     require(msg.value == buyInAmount);
     require(playerExists(msg.sender));
