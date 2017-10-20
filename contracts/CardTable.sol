@@ -157,7 +157,7 @@ contract CardTable {
     // player cannot already be registered
     require(!playerExists(msg.sender));
 
-    Player storage p = Player(msg.sender, name);
+    Player memory p = Player(msg.sender, name);
 
     // update index mapping and players array in one step, saving on gas
     addressToPlayer[msg.sender] = players.push(p) - 1;
@@ -199,8 +199,8 @@ contract CardTable {
 
   // create a new, blank game (typically nextGame)
   function newGame() private returns(Game g) {
-    Player[] storage ps;
-    Round[] storage rs;
+    Player[] memory ps;
+    Round[] memory rs;
 
     uint256 roundPayoutAmount = buyInAmount / numPlayers;
 
@@ -275,9 +275,9 @@ contract CardTable {
     require(!games[gameId].rounds[roundNum].winSubmitted);
     require(!games[gameId].rounds[roundNum].cancelled);
 
-    RoundProof[] storage prs;
+    RoundProof[] memory prs;
 
-    Round storage r = Round(msg.sender, true, false, false, false, false, prs);
+    Round memory r = Round(msg.sender, true, false, false, false, false, prs);
     games[gameId].rounds[roundNum] = r;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
@@ -344,7 +344,7 @@ contract CardTable {
     }
 
     // insert the proof
-    RoundProof storage pr = RoundProof(playerAccount, random);
+    RoundProof memory pr = RoundProof(playerAccount, random);
     games[gameId].rounds[roundNum].proofs.push(pr);
 
     SubmittedRoundResult(gameId, roundNum, playerAccount, msg.sender, random);
