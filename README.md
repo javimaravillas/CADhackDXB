@@ -12,9 +12,20 @@ Javier Franco (mentor)
 
 ### Development
 
-``` git clone https://github.com/javimaravillas/CADhackDXB.git/ ```
-``` npm install ```
+```
+  git clone https://github.com/javimaravillas/CADhackDXB.git/
+```
+```
+npm install
+```
 In another console ``` testrpc ```
-``` truffle build ```
-``` truffle migrate ```
-``` npm start ```
+
+```
+truffle build
+```
+```
+truffle migrate
+```
+```
+npm start
+```
