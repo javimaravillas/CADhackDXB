@@ -22,14 +22,18 @@ contract CardTable {
     bool invalidClaim;
     bool provenValid;
     bool cancelled;
-    RoundProof[] proofs;
+    uint256[] proofs;
   }
+
+  Round[] public rounds;
 
   // TODO: replace rand with cross-signed hashed proofs
   struct RoundProof {
     address account;
     uint256 random;
   }
+
+  RoundProof[] public roundProofs;
 
   // game composed of players and rounds
   struct Game {
@@ -38,8 +42,8 @@ contract CardTable {
     uint256 numRounds;
     uint256 buyInAmount;
     uint256 roundPayoutAmount;
-		Player[] players;
-    Round[] rounds;
+		uint256[] players;
+    uint256[] rounds;
 	}
 
   Game[] public games;
@@ -81,7 +85,7 @@ contract CardTable {
   }
 
   // constructor and functions
-  function CardTable() {
+  function CardTable() public {
 		owner = msg.sender;
 	}
 
@@ -169,14 +173,14 @@ contract CardTable {
   }
 
   // retrieve a player from the registry
-  function getPlayer(address playerAccount) private constant returns(Player p) {
-    return players[addressToPlayer[playerAccount]];
+  function getPlayer(address playerAccount) private constant returns(uint256 p) {
+    return addressToPlayer[playerAccount];
   }
 
   // check if a player is in a game
   function playerInGame(uint256 gameId, address playerAccount) private constant returns(bool exists) {
     for (uint i = 0; i < games[gameId].players.length; i++) {
-      if (games[gameId].players[i].account == playerAccount) {
+      if (players[games[gameId].players[i]].account == playerAccount) {
         return true;
       }
     }
@@ -189,7 +193,7 @@ contract CardTable {
   // refactoring how nextGame is handled
   function playerInNextGame(address playerAccount) private constant returns(bool exists) {
     for (uint i = 0; i < nextGame.players.length; i++) {
-      if (nextGame.players[i].account == playerAccount) {
+      if (players[nextGame.players[i]].account == playerAccount) {
         return true;
       }
     }
@@ -198,9 +202,9 @@ contract CardTable {
   }
 
   // create a new, blank game (typically nextGame)
-  function newGame() private returns(Game g) {
-    Player[] memory ps;
-    Round[] memory rs;
+  function newGame() view returns(Game g) {
+    uint256[] memory ps;
+    uint256[] memory rs;
 
     uint256 roundPayoutAmount = buyInAmount / numPlayers;
 
@@ -227,7 +231,7 @@ contract CardTable {
     require(!playerInNextGame(msg.sender));
 
     // add to nextGame
-    Player memory p = getPlayer(msg.sender);
+    uint256 p = getPlayer(msg.sender);
     nextGame.players.push(p);
     WaitingForGame(nextGame.id, msg.sender, buyInAmount);
 
@@ -240,18 +244,18 @@ contract CardTable {
         address prevPeer;
 
         if (i < nextGame.players.length - 1) {
-          nextPeer = nextGame.players[i + 1].account;
+          nextPeer = players[nextGame.players[i + 1]].account;
         } else {
-          nextPeer = nextGame.players[0].account;
+          nextPeer = players[nextGame.players[0]].account;
         }
 
         if (i > 0) {
-          prevPeer = nextGame.players[i - 1].account;
+          prevPeer = players[nextGame.players[i - 1]].account;
         } else {
-          prevPeer = nextGame.players[nextGame.players.length - 1].account;
+          prevPeer = players[nextGame.players[nextGame.players.length - 1]].account;
         }
 
-        GameStarting(nextGame.id, nextGame.players[i].account, nextPeer, prevPeer);
+        GameStarting(nextGame.id, players[nextGame.players[i]].account, nextPeer, prevPeer);
 
         // add game to games array
         addGame(nextGame);
@@ -272,13 +276,14 @@ contract CardTable {
     onlyByPlayerForRound(gameId, roundNum)
     returns(bool success)
   {
-    require(!games[gameId].rounds[roundNum].winSubmitted);
-    require(!games[gameId].rounds[roundNum].cancelled);
+    require(!rounds[games[gameId].rounds[roundNum]].winSubmitted);
+    require(!rounds[games[gameId].rounds[roundNum]].cancelled);
 
-    RoundProof[] memory prs;
+    // RoundProof[] memory prs;
 
-    Round memory r = Round(msg.sender, true, false, false, false, false, prs);
-    games[gameId].rounds[roundNum] = r;
+    // Round memory r = Round(msg.sender, true, false, false, false, false, blankProofs);
+    // rounds[games[gameId].rounds[roundNum]] = r;
+    //rounds[games[gameId].rounds[roundNum]] = blankRound;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
 
@@ -292,12 +297,12 @@ contract CardTable {
   {
     require(playerInGame(gameId, invalidAccount));
     require(invalidAccount != msg.sender);
-    require(!games[gameId].rounds[roundNum].paidOut);
-    require(!games[gameId].rounds[roundNum].invalidClaim);
-    require(!games[gameId].rounds[roundNum].provenValid);
-    require(!games[gameId].rounds[roundNum].cancelled);
+    require(!rounds[games[gameId].rounds[roundNum]].paidOut);
+    require(!rounds[games[gameId].rounds[roundNum]].invalidClaim);
+    require(!rounds[games[gameId].rounds[roundNum]].provenValid);
+    require(!rounds[games[gameId].rounds[roundNum]].cancelled);
 
-    games[gameId].rounds[roundNum].invalidClaim = true;
+    rounds[games[gameId].rounds[roundNum]].invalidClaim = true;
 
     ClaimedInvalid(gameId, roundNum, invalidAccount, msg.sender);
 
@@ -312,46 +317,47 @@ contract CardTable {
     uint256 roundNum, 
     address playerAccount, 
     uint256 random)
+    public
     onlyByPlayerForRound(gameId, roundNum)
     returns(bool success)
   {
     require(playerInGame(gameId, playerAccount));
-    require(!games[gameId].rounds[roundNum].paidOut);
-    require(games[gameId].rounds[roundNum].invalidClaim);
-    require(!games[gameId].rounds[roundNum].provenValid);
-    require(!games[gameId].rounds[roundNum].cancelled);
+    require(!rounds[games[gameId].rounds[roundNum]].paidOut);
+    require(rounds[games[gameId].rounds[roundNum]].invalidClaim);
+    require(!rounds[games[gameId].rounds[roundNum]].provenValid);
+    require(!rounds[games[gameId].rounds[roundNum]].cancelled);
 
     // TODO: validate the proof
     // TODO: invalid proof, so penalize the offender
 
     // check if the proof has already been submitted
     bool seenProofAlready = false;
-    uint idxProof;
+    // uint idxProof;
 
-    for (idxProof = 0; idxProof < games[gameId].rounds[roundNum].proofs.length; idxProof++) {
-      if (games[gameId].rounds[roundNum].proofs[idxProof].account == playerAccount) {
-        seenProofAlready = true;
-        break;
-      }
-    }
+    // for (idxProof = 0; idxProof < rounds[games[gameId].rounds[roundNum]].proofs.length; idxProof++) {
+    //   if (rounds[games[gameId].rounds[roundNum]].proofs[idxProof].account == playerAccount) {
+    //     seenProofAlready = true;
+    //     break;
+    //   }
+    // }
 
     // resubmitted an already "validated" proof; "penalize" the submitter
     // TODO: actual validation and actual penalization
     if (seenProofAlready) {
-      games[gameId].rounds[roundNum].cancelled = true;
+      rounds[games[gameId].rounds[roundNum]].cancelled = true;
       InvalidProof(gameId, roundNum, playerAccount, msg.sender, random);
       return false;
     }
 
     // insert the proof
-    RoundProof memory pr = RoundProof(playerAccount, random);
-    games[gameId].rounds[roundNum].proofs.push(pr);
+    //RoundProof memory pr = RoundProof(playerAccount, random);
+    //rounds[games[gameId].rounds[roundNum]].proofs.push(pr);
 
     SubmittedRoundResult(gameId, roundNum, playerAccount, msg.sender, random);
 
     // if all proofs have been submitted, validate the proof
-    if (games[gameId].rounds[roundNum].proofs.length + 1 == games[gameId].numPlayers) {
-      games[gameId].rounds[roundNum].provenValid = true;
+    if (rounds[games[gameId].rounds[roundNum]].proofs.length + 1 == games[gameId].numPlayers) {
+      rounds[games[gameId].rounds[roundNum]].provenValid = true;
       ProvenValid(gameId, roundNum, msg.sender);
     }
 
@@ -363,15 +369,16 @@ contract CardTable {
   function payout(
     uint256 gameId, 
     uint256 roundNum)
+    public
     onlyByPlayerForRound(gameId, roundNum)
     returns(bool success)
   {
-    require(!games[gameId].rounds[roundNum].paidOut);
-    require(!games[gameId].rounds[roundNum].invalidClaim || games[gameId].rounds[roundNum].provenValid);
-    require(!games[gameId].rounds[roundNum].cancelled);
-    require(games[gameId].rounds[roundNum].winner == msg.sender);
+    require(!rounds[games[gameId].rounds[roundNum]].paidOut);
+    require(!rounds[games[gameId].rounds[roundNum]].invalidClaim || rounds[games[gameId].rounds[roundNum]].provenValid);
+    require(!rounds[games[gameId].rounds[roundNum]].cancelled);
+    require(rounds[games[gameId].rounds[roundNum]].winner == msg.sender);
 
-    games[gameId].rounds[roundNum].paidOut = true;
+    rounds[games[gameId].rounds[roundNum]].paidOut = true;
 
     PayWinnings(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
 
