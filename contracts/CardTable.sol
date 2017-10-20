@@ -50,11 +50,11 @@ contract CardTable {
 
   // global state variables with defaults where available
   address public owner;
-  uint256 numPlayers = 3;
-  uint256 numRounds = 10;
-  uint256 buyInAmount = numRounds * 1 ether;
+  uint256 public numPlayers = 3;
+  uint256 public numRounds = 10;
+  uint256 public buyInAmount = numRounds * 1 ether;
 
-  Game nextGame;  // game waiting to be filled with players
+  Game public nextGame;  // game waiting to be filled with players
 
   // events
   event RegisteredPlayer(uint256 playerId, address playerAccount, string name);
