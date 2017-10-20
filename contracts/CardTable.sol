@@ -223,10 +223,10 @@ contract CardTable {
   // add a game (typically nextGame) to the games array
   function addGame(Game g) private returns(uint256 gameId) {
     // retrieve id as part of array addition to save on gas
-    uint256 id = games.push(g) - 1;
-    games[id].id = id;
+    gameId = games.push(g) - 1;
+    games[id].id = gameId;
 
-    return id;
+    return gameId;
   }
 
   // called by a player who wishes to join a game
