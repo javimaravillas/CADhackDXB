@@ -49,7 +49,11 @@ class GameApp extends Component {
   }
 
   connect() {
-    const playerAddresses = ["0xa3fce31fc0f89bdf7e52284d389ead28dfce81be", "0x711b926dad3bf4a5aec55f3283275e2ae3931298", "0x7D4917388E9a304B01a6A1C2E62b601684C7a825"];
+    const playerAddresses = [
+      "0xa3fce31fc0f89bdf7e52284d389ead28dfce81be",
+      "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
+      "0x7D4917388E9a304B01a6A1C2E62b601684C7a825",
+      "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
     playerAddresses.forEach((address)=> {
       if(address !== this.state.peerId) {
         connectionService.connect(address).then(() => {
