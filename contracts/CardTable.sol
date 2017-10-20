@@ -64,14 +64,18 @@ contract CardTable {
 	}
 
   function updateNumPlayers(uint256 _numPlayers) public onlyByOwner() {
+    require(_numPlayers > 1);
+    require(buyInAmount > _numPlayers); // to ensure easy divisibility
     numPlayers = _numPlayers;
   }
 
   function updateNumRounds(uint256 _numRounds) public onlyByOwner() {
+    require(_numRounds > 0);
     numRounds = _numRounds;
   }
 
   function updateBuyInAmount(uint256 _buyInAmount) public onlyByOwner() {
+    require(_buyInAmount > numPlayers); // to ensure easy divisibility
     buyInAmount = _buyInAmount;
   }
 
