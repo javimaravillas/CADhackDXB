@@ -1,6 +1,6 @@
-var SimpleStorage = artifacts.require("./SimpleStorage.sol");
+var SimpleStorage = artifacts.require("./CardTable.sol");
 
-contract('SimpleStorage', function(accounts) {
+contract('CardTable', function(accounts) {
 
   it("...should store the value 89.", function() {
     return SimpleStorage.deployed().then(function(instance) {
