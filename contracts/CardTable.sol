@@ -17,7 +17,6 @@ contract CardTable {
   // round of play within a game
   struct Round {
     address winner;
-    uint256 payoutAmount;
     bool winSubmitted;
     bool paidOut;
     bool invalidClaim;
@@ -63,6 +62,7 @@ contract CardTable {
   event InvalidProof(uint256 gameId, uint256 roundNum, address playerAccount, address proverAccount, uint256 proof);
   event SubmittedRoundResult(uint256 gameId, uint256 roundNum, address playerAccount, address notifierAccount, uint256 random);
   event ProvenValid(uint256 gameId, uint256 roundNum, address playerAccount);
+  event PayWinnings(uint256 gameId, uint256 roundNum, address winnerAccount, uint256 payoutAmount);
   // event GameTimeout( uint256 gameId, address notifierAccount);
   // event PayoutTimeout(uint256 gameId, uint256 roundNum, uint256 payoutAmount);
   // event GameFinished(uint256 gameId);
@@ -278,7 +278,7 @@ contract CardTable {
     // initialize round proofs array, one for each player, with blank proofs
     RoundProof[] prs;
 
-    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false, false, false, prs);
+    Round r = Round(msg.sender, true, false, false, false, false, prs);
     games[gameId].rounds[roundNum] = r;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
@@ -355,6 +355,28 @@ contract CardTable {
       games[gameId].rounds[roundNum].provenValid = true;
       ProvenValid(gameId, roundNum, msg.sender);
     }
+
+    return true;
+  }
+
+  // winner for a round can withdraw their winnings
+  // TODO: require a waiting period between submitting a win and withdrawing the payout
+  function payout(
+    uint256 gameId, 
+    uint256 roundNum)
+    onlyByPlayerForRound(gameId, roundNum)
+    returns(bool success)
+  {
+    require(!games[gameId].rounds[roundNum].paidOut);
+    require(!games[gameId].rounds[roundNum].invalidClaim || games[gameId].rounds[roundNum].provenValid);
+    require(!games[gameId].rounds[roundNum].cancelled);
+    require(games[gameId].rounds[roundNum].winner == msg.sender);
+
+    games[gameId].rounds[roundNum].paidOut = true;
+
+    PayWinnings(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
+
+    msg.sender.transfer(games[gameId].roundPayoutAmount);
 
     return true;
   }
