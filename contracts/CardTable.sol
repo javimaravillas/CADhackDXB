@@ -86,7 +86,7 @@ contract CardTable {
 			return false;
 		}
 
-		if (players[addressToPlayer[playerAccount].account] == playerAccount) {
+		if (players[addressToPlayer[playerAccount]].account == playerAccount) {
 			return true;
 		}
 
