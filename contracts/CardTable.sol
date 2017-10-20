@@ -202,7 +202,7 @@ contract CardTable {
   }
 
   // create a new, blank game (typically nextGame)
-  function newGame() view returns(Game g) {
+  function newGame() view private returns(Game g) {
     uint256[] memory ps;
     uint256[] memory rs;
 
