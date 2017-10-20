@@ -87,10 +87,16 @@ class App extends Component {
         serialization: 'none',
         metadata: {message: 'join game request'}
       });
-      c.on('error', function(err) { alert(err); });
-      connectedPeers[this.state.connectTo] = 1;
-      this.setState({
-        connectedPeers: connectedPeers
+      c.on('error', (err) => {
+        console.log(err)
+        alert(err)
+      });
+      c.on('open', (value) => {
+        connectedPeers[this.state.connectTo] = 1;
+        this.setState({
+          connectedPeers: connectedPeers
+        })
+        console.log("connected");
       })
     } else {
       alert("already connected!")
@@ -114,10 +120,9 @@ class App extends Component {
           onChange={(e) => this.handlePeerInput(e)}
           placeholder="Someone else's id"></input>
       <button className="connect" id="connect" onClick={() => this.connect()}>Connect</button>
-      <button className="get-card">Deal a card</button>
+      {connections.length ? <button className="get-card">Deal a card</button>: ""}
       <div id="connections">
-        <span className="filler">You have not yet made any connections.</span>
-        {connections.length ? <ul>{connections}</ul> : "No connections"}
+        {connections.length ? <ul>{connections}</ul> : "You have not made any connections"}
       </div>
       </div>
     );
