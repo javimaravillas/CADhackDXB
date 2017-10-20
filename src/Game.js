@@ -24,7 +24,8 @@ class GameApp extends Component {
   componentWillMount() {
     getWeb3.then(results => {
       this.setState({
-        web3: results.web3
+        web3: results.web3,
+        master: "0x711b926dad3bf4a5aec55f3283275e2ae3931298"
       });
       results.web3.eth.getAccounts((error, accounts) => {
         if(error) {
@@ -50,9 +51,7 @@ class GameApp extends Component {
 
   connect() {
     const playerAddresses = [
-      "0xa3fce31fc0f89bdf7e52284d389ead28dfce81be",
       "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
-      "0x7D4917388E9a304B01a6A1C2E62b601684C7a825",
       "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
     playerAddresses.forEach((address)=> {
       if(address !== this.state.peerId) {
@@ -61,9 +60,6 @@ class GameApp extends Component {
         });
       }
     });
-    this.setState({
-      master: "0x711b926dad3bf4a5aec55f3283275e2ae3931298"
-    })
   }
 
   endRound(winner) {
@@ -79,7 +75,18 @@ class GameApp extends Component {
     }
   }
 
+  isMaster() {
+    return this.state.master === this.state.peerId
+  }
+
   dealCard() {
+    if(this.isMaster()) {
+      let peers = this.state.peers
+      peers[this.state.peerId] = Math.random()
+      this.setState({
+        peers: peers
+      })
+    }
     connectionService.send(this.state.master, { card: Math.random() })
   }
 
@@ -103,7 +110,7 @@ class GameApp extends Component {
   }
 
   acceptCard(address, data) {
-    if (!this.state.master === this.state.peerId) {
+    if (!this.isMaster()) {
       throw new Error("Only the master can accept cards!")
     }
     let peers = this.state.peers

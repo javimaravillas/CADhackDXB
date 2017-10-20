@@ -63,7 +63,7 @@ const ConnectionService = () =>{
         console.log("connecting to peer: ", peerId);
         var c = peer.connect(peerId, {
           label: 'chat',
-          serialization: 'none',
+          serialization: 'json',
           metadata: {message: 'join game request'}
         });
         configureConnection(c, resolve);
