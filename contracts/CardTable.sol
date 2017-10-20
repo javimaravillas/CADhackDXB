@@ -20,6 +20,8 @@ contract CardTable {
     uint256 payoutAmount;
     bool winSubmitted;
     bool paidOut;
+    bool playerTimeoutClaim;
+    bool invalidWinClaim;
   }
 
   // game composed of players and rounds
@@ -48,7 +50,8 @@ contract CardTable {
   event WaitingForGame(uint256 gameId, address playerAccount, uint256 buyInAmount);
   event GameStarting(uint256 gameId, address playerAccount, address nextPeer, address prevPeer);
   event WinSubmitted(uint256 gameId, uint256 roundNum, address winnerAccount, uint256 payoutAmount);
-  event PlayerTimeout(uint256 gameId, address playerAccount, address notifierAccount, uint256 roundNum);
+  event ClaimedPlayerTimeout(uint256 gameId, uint256 roundNum, address timeoutAccount, address notifierAccount);
+  event ClaimedInvalidWin(uint256 gameId, uint256 roundNum, address invalidWinAccount, address notifierAccount);
   event GameTimeout( uint256 gameId, address notifierAccount);
   event PayoutTimeout(uint256 gameId, uint256 roundNum, uint256 payoutAmount);
   event GameFinished(uint256 gameId);
@@ -247,15 +250,54 @@ contract CardTable {
   // called by the winner of a round to claim the win
   // can be challenged by the other players
   // TODO: winner must stake a certain amount of Ether against the claim
-  function submitWin(uint256 gameId, uint256 roundNum) public {
+  function submitWin(uint256 gameId, uint256 roundNum) public returns(bool success) {
     require(roundExists(gameId, roundNum)); // will also verify that game exists
     require(playerInGame(gameId, msg.sender));
     require(!games[gameId].rounds[roundNum].winSubmitted);
     require(!games[gameId].rounds[roundNum].paidOut);
 
-    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false);
+    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false, false);
     games[gameId].rounds[roundNum] = r;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
+
+    return true;
+  }
+
+  function claimPlayerTimeout(uint256 gameId, uint256 roundNum, address timeoutAccount)
+    public
+    returns(bool success)
+  {
+    require(roundExists(gameId, roundNum)); // will also verify that game exists
+    require(playerInGame(gameId, msg.sender));
+    require(playerInGame(gameId, timeoutAccount));
+    require(timeoutAccount != msg.sender);
+    require(!games[gameId].rounds[roundNum].paidOut);
+    require(!games[gameId].rounds[roundNum].playerTimeoutClaim);
+
+    games[gameId].rounds[roundNum].playerTimeoutClaim = true;
+
+    ClaimedPlayerTimeout(gameId, roundNum, timeoutAccount, msg.sender);
+
+    return true;
+  }
+
+  function claimInvalidWin(uint256 gameId, uint256 roundNum, address invalidWinAccount)
+    public
+    returns(bool success)
+  {
+    require(roundExists(gameId, roundNum)); // will also verify that game exists
+    require(playerInGame(gameId, msg.sender));
+    require(playerInGame(gameId, invalidWinAccount));
+    require(invalidWinAccount != msg.sender);
+    require(games[gameId].rounds[roundNum].winSubmitted);
+    require(!games[gameId].rounds[roundNum].paidOut);
+    require(!games[gameId].rounds[roundNum].invalidWinClaim);
+
+    games[gameId].rounds[roundNum].invalidWinClaim = true;
+
+    ClaimedPlayerTimeout(gameId, roundNum, invalidWinAccount, msg.sender);
+
+    return true;
   }
 }
