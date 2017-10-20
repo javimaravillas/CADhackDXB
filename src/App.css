@@ -6,7 +6,7 @@ body,
   color: white;
 }
 
-button {
+button, input {
   color: black;
 }
 
