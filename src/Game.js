@@ -32,7 +32,7 @@ class GameApp extends Component {
         } else {
           connectionService.setup(
             accounts[0], {
-              afterOpen: this.props.updateConnectedPeers
+              afterOpen: this.props.updateConnectedPeers,
               afterData: this.handleData
             })
           .then((id) => {
@@ -68,10 +68,10 @@ class GameApp extends Component {
 
   handleData(address, data) {
     if (data.card) {
-      return acceptCard(addres, data)
+      return this.acceptCard(address, data)
     }
     if (data.winner) {
-      endRound(data.winner)
+      this.endRound(data.winner)
     }
   }
 
@@ -129,7 +129,7 @@ class GameApp extends Component {
         placeholder="Someone else's id"></input>
         <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
         { connections }
-        <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: ""
+        { connections.length ? <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: "" }
       </div>
     );
   }

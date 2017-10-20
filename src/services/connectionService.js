@@ -56,10 +56,6 @@ const ConnectionService = () =>{
     }
   }
 
-  function getConnectionFor(address) {
-    return connectedPeers[address]
-  }
-
   function connect(peerId) {
     // Handle a chat connection.
     return new Promise((resolve, reject) => {
