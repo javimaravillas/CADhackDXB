@@ -22,14 +22,14 @@ contract CardTable {
     bool paidOut;
     bool invalidClaim;
     bool provenValid;
+    bool cancelled;
     RoundProof[] proofs;
   }
 
   // TODO: replace rand with cross-signed hashed proofs
   struct RoundProof {
     address account;
-    uint256 rand;
-    bool provenValid;
+    uint256 random;
   }
 
   // game composed of players and rounds
@@ -60,7 +60,9 @@ contract CardTable {
   event WinSubmitted(uint256 gameId, uint256 roundNum, address winnerAccount, uint256 payoutAmount);
   event ClaimedInvalid(uint256 gameId, uint256 roundNum, address invalidAccount, address notifierAccount);
   // event ClaimedInvalidWin(uint256 gameId, uint256 roundNum, address invalidWinAccount, address notifierAccount);
+  event InvalidProof(uint256 gameId, uint256 roundNum, address playerAccount, address proverAccount, uint256 proof);
   event SubmittedRoundResult(uint256 gameId, uint256 roundNum, address playerAccount, address notifierAccount, uint256 random);
+  event ProvenValid(uint256 gameId, uint256 roundNum, address playerAccount);
   // event GameTimeout( uint256 gameId, address notifierAccount);
   // event PayoutTimeout(uint256 gameId, uint256 roundNum, uint256 payoutAmount);
   // event GameFinished(uint256 gameId);
@@ -271,15 +273,12 @@ contract CardTable {
     returns(bool success)
   {
     require(!games[gameId].rounds[roundNum].winSubmitted);
+    require(!games[gameId].rounds[roundNum].cancelled);
 
     // initialize round proofs array, one for each player, with blank proofs
     RoundProof[] prs;
-    for (uint i = 0; i < games[gameId].numPlayers; i++) {
-      RoundProof pr;
-      prs.push(pr);
-    }
 
-    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false, false, prs);
+    Round r = Round(msg.sender, games[gameId].roundPayoutAmount, true, false, false, false, false, prs);
     games[gameId].rounds[roundNum] = r;
 
     WinSubmitted(gameId, roundNum, msg.sender, games[gameId].roundPayoutAmount);
@@ -297,6 +296,7 @@ contract CardTable {
     require(!games[gameId].rounds[roundNum].paidOut);
     require(!games[gameId].rounds[roundNum].invalidClaim);
     require(!games[gameId].rounds[roundNum].provenValid);
+    require(!games[gameId].rounds[roundNum].cancelled);
 
     games[gameId].rounds[roundNum].invalidClaim = true;
 
@@ -320,10 +320,41 @@ contract CardTable {
     require(!games[gameId].rounds[roundNum].paidOut);
     require(games[gameId].rounds[roundNum].invalidClaim);
     require(!games[gameId].rounds[roundNum].provenValid);
+    require(!games[gameId].rounds[roundNum].cancelled);
 
+    // TODO: validate the proof
+    // TODO: invalid proof, so penalize the offender
 
+    // check if the proof has already been submitted
+    bool seenProofAlready = false;
+    uint idxProof;
+
+    for (idxProof = 0; idxProof < games[gameId].rounds[roundNum].proofs.length; idxProof++) {
+      if (games[gameId].rounds[roundNum].proofs[idxProof].account == playerAccount) {
+        seenProofAlready = true;
+        break;
+      }
+    }
+
+    // resubmitted an already "validated" proof; "penalize" the submitter
+    // TODO: actual validation and actual penalization
+    if (seenProofAlready) {
+      games[gameId].rounds[roundNum].cancelled = true;
+      InvalidProof(gameId, roundNum, playerAccount, msg.sender, random);
+      return false;
+    }
+
+    // insert the proof
+    RoundProof pr = RoundProof(playerAccount, random);
+    games[gameId].rounds[roundNum].proofs.push(pr);
 
     SubmittedRoundResult(gameId, roundNum, playerAccount, msg.sender, random);
+
+    // if all proofs have been submitted, validate the proof
+    if (games[gameId].rounds[roundNum].proofs.length + 1 == games[gameId].numPlayers) {
+      games[gameId].rounds[roundNum].provenValid = true;
+      ProvenValid(gameId, roundNum, msg.sender);
+    }
 
     return true;
   }
