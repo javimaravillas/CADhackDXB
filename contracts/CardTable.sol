@@ -5,11 +5,10 @@ contract CardTable {
   struct Player {
 		address account;
 		string name;
-    uint256 gamesPlayed;
-    uint256 gamesWon;
-    uint256 gamesLost;
-    uint256 gamesAborted;
-    bool inAGame;
+    // uint256 gamesPlayed;
+    // uint256 gamesWon;
+    // uint256 gamesLost;
+    // uint256 gamesAborted;
 	}
 
   mapping (address => uint256) public addressToPlayer;
@@ -43,6 +42,7 @@ contract CardTable {
   Game nextGame;  // game waiting to be filled with players
 
   // events
+  event RegisteredPlayer(uint256 playerId, address playerAccount, string name);
   event WaitingForGame(address playerAccount, uint256 buyInAmount);
 	event ErrorJoiningGame(address playerAccount, uint256 buyInAmount);
   event ConnectToGame(address playerAccount, uint256 gameId, address nextPeer, address prevPeer);
@@ -76,9 +76,42 @@ contract CardTable {
     buyInAmount = _buyInAmount;
   }
 
-  function joinGame() public payable {
+  // check if this player exists
+	function playerExists(address playerAccount)
+		public
+		constant
+		returns(bool exists)
+	{
+		if (players.length == 0) {
+			return false;
+		}
+
+		if (players[addressToPlayer[playerAccount].account] == playerAccount) {
+			return true;
+		}
+
+		return false;
+	}
+
+  function registerPlayer(string name) public returns(bool success) {
+    // player cannot already be registered
+    require(!playerExists(msg.sender));
+
+    p memory Player = Player(msg.sender, name);
+
+    // update index mapping and players array in one step, saving on gas
+    addressToPlayer[msg.sender] = players.push(p) - 1;
+		id = players.length - 1;
+
+		RegisteredPlayer(id, msg.sender, name);
+  }
+
+  function joinGame() public payable returns(bool success) {
     require(msg.value >= buyInAmount);
+    require(playerExists(msg.sender));
 
+    // add to nextGame
 
+    // if nextGame is full, start the game
   }
 }
