@@ -24,7 +24,8 @@ class GameApp extends Component {
   componentWillMount() {
     getWeb3.then(results => {
       this.setState({
-        web3: results.web3
+        web3: results.web3,
+        master: "0x711b926dad3bf4a5aec55f3283275e2ae3931298"
       });
       results.web3.eth.getAccounts((error, accounts) => {
         if(error) {
@@ -32,7 +33,7 @@ class GameApp extends Component {
         } else {
           connectionService.setup(
             accounts[0], {
-              afterOpen: this.props.updateConnectedPeers
+              afterOpen: this.props.updateConnectedPeers,
               afterData: this.handleData
             })
           .then((id) => {
@@ -49,17 +50,20 @@ class GameApp extends Component {
   }
 
   connect() {
-    const playerAddresses = ["0xa3fce31fc0f89bdf7e52284d389ead28dfce81be", "0x711b926dad3bf4a5aec55f3283275e2ae3931298", "0x7D4917388E9a304B01a6A1C2E62b601684C7a825"];
-    playerAddresses.forEach((address)=> {
+    const playerAddresses = [
+      "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
+      "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
+    playerAddresses.forEach((address) => {
       if(address !== this.state.peerId) {
-        connectionService.connect(address).then(() => {
+        const callbacks = {
+          afterOpen: () => this.props.updateConnectedPeers(),
+          afterData: (addr, data) => this.handleData(addr, data)
+        }
+        connectionService.connect(address, callbacks).then(() => {
           this.props.updateConnectedPeers(address);
         });
       }
     });
-    this.setState({
-      master: playerAddresses[0]
-    })
   }
 
   endRound(winner) {
@@ -68,21 +72,49 @@ class GameApp extends Component {
 
   handleData(address, data) {
     if (data.card) {
-      return acceptCard(addres, data)
+      return this.acceptCard(address, data)
     }
     if (data.winner) {
-      endRound(data.winner)
+      this.endRound(data.winner)
     }
+  }
+
+  checkEndGame() {
+    if (this.isRoundOver()) {
+      const winner = this.calculateWinner()
+      // refactor to remove self !!!
+      this.props.connections.map(address =>
+        connectionService.send(address, {winner: winner}))
+      this.endRound(winner)
+    } else {
+      console.log(this.state.peers)
+    }
+  }
+
+  isMaster() {
+    return this.state.master === this.state.peerId
   }
 
   dealCard() {
-    connectionService.send(this.state.master, { card: Math.random() })
+    if(this.isMaster()) {
+      let peers = this.state.peers
+      peers[this.state.peerId] = Math.random()
+      this.setState({
+        peers: peers
+      })
+      this.checkEndGame()
+    } else {
+      connectionService.send(this.state.master, { card: Math.random() })
+    }
   }
 
   isRoundOver() {
-    return Array.prototype.every(this.props.connections.map(address =>
+    const playerAddresses = [
+      "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
+      "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
+    return playerAddresses.map(address =>
       this.state.peers[address] !== undefined
-    ))
+    ).every(b => b)
   }
 
   calculateWinner() {
@@ -99,7 +131,7 @@ class GameApp extends Component {
   }
 
   acceptCard(address, data) {
-    if (!this.state.master === this.state.peerId) {
+    if (!this.isMaster()) {
       throw new Error("Only the master can accept cards!")
     }
     let peers = this.state.peers
@@ -107,12 +139,7 @@ class GameApp extends Component {
     this.setState({
       peers: peers
     })
-    if (this.isRoundOver()) {
-      const winner = this.calculateWinner()
-      this.props.connections.map(address =>
-        connectionService.send(address, {winner: winner}))
-      this.endRound(winner)
-    }
+    this.checkEndGame()
   }
 
   render() {
@@ -129,7 +156,7 @@ class GameApp extends Component {
         placeholder="Someone else's id"></input>
         <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
         { connections }
-        <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: ""
+        { connections.length ? <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: "" }
       </div>
     );
   }
