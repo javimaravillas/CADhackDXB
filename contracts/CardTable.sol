@@ -312,6 +312,7 @@ contract CardTable {
   // submit a player's random number for a round as part of a verification
   // of that round
   // TODO: submit cross-signed hashed random number rather than just random number
+  // NOTE: not working at this point
   function submitRoundResult(
     uint256 gameId, 
     uint256 roundNum, 
