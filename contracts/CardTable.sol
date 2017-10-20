@@ -178,7 +178,7 @@ contract CardTable {
   }
 
   // retrieve the number of registered players
-  function playersCount(uint truffleBugWorkaround) public constant returns(uint256 count) {
+  function playersCount() public constant returns(uint256 count) {
     return players.length;
   }
 
@@ -207,7 +207,7 @@ contract CardTable {
   }
 
   // create a new, blank game (typically nextGame)
-  function newGame() view private returns(Game g) {
+  function newGame() private returns(Game g) {
     uint256[] memory ps;
     uint256[] memory rs;
 
