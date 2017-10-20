@@ -29,12 +29,27 @@ const ConnectionService = () =>{
 	    
 	    // Await connections from others
             peer.on('connection', (c) => {
-		console.log('connection', c);
-		this.connect(c);
+            console.log('connection', c);
+            configureConnection(c, resolve);
 	    });
 	});
     }
-
+    function configureConnection(connection, callback) {
+        if(!connectedPeers[connection.peer]) {
+            connection.on('error', (err) => {
+                console.log(err);
+                alert(err);
+            });
+            connection.on('open', () => {
+                console.log("connected to: ", connection.peer);
+                connectedPeers[connection.peer] = connection;
+                connection.on('data', (value) => {
+                    console.log('data', {value});
+                });
+                callback();
+            });
+    }
+}
   function connect(peerId) {
     // Handle a chat connection.
       return new Promise((resolve, reject) => {
@@ -45,20 +60,7 @@ const ConnectionService = () =>{
 		  serialization: 'none',
 		  metadata: {message: 'join game request'}
 	      });
-	      c.on('error', (err) => {
-		  console.log(err);
-		  alert(err);
-	      });
-	      c.on('open', (value) => {
-		  console.log("connected to: ", peerId, {value});
-		  resolve();
-	      });
-	      c.on('data', (value) => {
-		  console.log('data', {value});
-	      });
-	      
-	      connectedPeers[peerId] = c;
-
+          configureConnection(c);
 	  } else {
 	      alert("already connected!", peerId);
 	  }
