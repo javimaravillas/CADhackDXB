@@ -58,7 +58,7 @@ contract CardTable {
 
   // events
   event RegisteredPlayer(uint256 playerId, address playerAccount, string name);
-  event WaitingForGame(uint256 gameId, address playerAccount, uint256 boughtInAmount);
+  event WaitingForGame(address playerAccount, uint256 boughtInAmount);
   event GameStarting(uint256 gameId, address playerAccount, address nextPeer, address prevPeer);
   event WinSubmitted(uint256 gameId, uint256 roundNum, address winnerAccount, uint256 payoutAmount);
   event ClaimedInvalid(uint256 gameId, uint256 roundNum, address invalidAccount, address notifierAccount);
@@ -221,12 +221,12 @@ contract CardTable {
   }
 
   // add a game (typically nextGame) to the games array
-  function addGame(Game g) private returns(bool success) {
+  function addGame(Game g) private returns(uint256 gameId) {
     // retrieve id as part of array addition to save on gas
     uint256 id = games.push(g) - 1;
     games[id].id = id;
 
-    return true;
+    return id;
   }
 
   // called by a player who wishes to join a game
@@ -238,10 +238,13 @@ contract CardTable {
     // add to nextGame
     uint256 p = getPlayer(msg.sender);
     nextGame.players.push(p);
-    WaitingForGame(nextGame.id, msg.sender, buyInAmount);
+    WaitingForGame(msg.sender, buyInAmount);
 
     // if nextGame is full, start the game
     if (nextGame.players.length == nextGame.numPlayers) {
+
+      // add game to games array
+      uint256 gameId = addGame(nextGame);
 
       // notify the players to connect to their peers
       for (uint i = 0; i < nextGame.players.length; i++) {
@@ -260,10 +263,7 @@ contract CardTable {
           prevPeer = players[nextGame.players[nextGame.players.length - 1]].account;
         }
 
-        GameStarting(nextGame.id, players[nextGame.players[i]].account, nextPeer, prevPeer);
-
-        // add game to games array
-        addGame(nextGame);
+        GameStarting(gameId, players[nextGame.players[i]].account, nextPeer, prevPeer);
       }
 
       // reset nextGame
