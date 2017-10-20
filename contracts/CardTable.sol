@@ -115,13 +115,19 @@ contract CardTable {
     Player[] ps;
     Round[] rs;
 
+    // note that gameId will be initialized to 0, but must be set correctly 
+    // when game is added to games array
     g = Game(0, numPlayers, numRounds, buyInAmount, ps, rs);
 
+    return g;
+  }
+
+  function addGame(Game g) private returns(bool success) {
     // retrieve id as part of array addition to save on gas
     uint256 id = games.push(g) - 1;
     games[id].id = id;
 
-    return g;
+    return true;
   }
 
   function joinGame() public payable returns(bool success) {
@@ -154,6 +160,9 @@ contract CardTable {
         }
 
         GameStarting(nextGame.id, nextGame.players[i].account, nextPeer, prevPeer);
+
+        // add game to games array
+        addGame(nextGame);
       }
 
       // reset nextGame
