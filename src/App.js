@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import SimpleStorageContract from '../build/contracts/SimpleStorage.json'
+import Peer from 'peerjs'
+import $ from 'jquery'
 import getWeb3 from './utils/getWeb3'
 
 import './css/oswald.css'
@@ -7,85 +8,125 @@ import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
 
+var peer;
+
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      storageValue: 0,
-      web3: null
+      peerId: '',
+      connectTo: '',
+      round: 1,
+      numPlayers: 3,
+      numbers: {},
+      connectedPeers: {}
     }
   }
 
   componentWillMount() {
-    // Get network provider and web3 instance.
-    // See utils/getWeb3 for more info.
-
-    getWeb3
-    .then(results => {
+    getWeb3.then(results => {
       this.setState({
         web3: results.web3
-      })
-
-      // Instantiate contract once web3 provided.
-      this.instantiateContract()
-    })
-    .catch(() => {
+      });
+      results.web3.eth.getAccounts((error, accounts) => {
+          if(error) {
+            console.log(error);
+          } else {
+            peer = new Peer(accounts[0], {
+              host: '10.0.212.83',
+              port: 9000,
+              debug: 3,
+              logFunction: function() {
+                var copy = Array.prototype.slice.call(arguments).join(' ');
+                $('.log').append(copy + '<br>');
+              }
+            });
+            peer.on('error', function(err) {
+              console.log(err);
+            });
+            peer.on('open', (id) => {
+              this.setState({
+                'peerId': id
+              });
+            });
+            // Await connections from others
+            peer.on('connection', (c) => this.connect(c));
+          }
+      });
+    }).catch(() => {
       console.log('Error finding web3.')
-    })
+    });
   }
 
   instantiateContract() {
-    /*
-     * SMART CONTRACT EXAMPLE
-     *
-     * Normally these functions would be called in the context of a
-     * state management library, but for convenience I've placed them here.
-     */
 
-    const contract = require('truffle-contract')
-    const simpleStorage = contract(SimpleStorageContract)
-    simpleStorage.setProvider(this.state.web3.currentProvider)
+  }
 
-    // Declaring this for later so we can chain functions on SimpleStorage.
-    var simpleStorageInstance
-
-    // Get accounts.
-    this.state.web3.eth.getAccounts((error, accounts) => {
-      simpleStorage.deployed().then((instance) => {
-        simpleStorageInstance = instance
-
-        // Stores a given value, 5 by default.
-        return simpleStorageInstance.set(5, {from: accounts[0]})
-      }).then((result) => {
-        // Get the value from the contract to prove it worked.
-        return simpleStorageInstance.get.call(accounts[0])
-      }).then((result) => {
-        // Update state with the result.
-        return this.setState({ storageValue: result.c[0] })
+  seeIfGameFinished() {
+    const numbers = this.state.get('numbers')
+    if(Object.keys(numbers).length === 3) {
+      var highestNum = 0;
+      var winner = 0;
+      Object.keys(this.state.get('numbers')).forEach(function(peerId) {
+        if(numbers[peerId] > highestNum) {
+            highestNum = numbers[peerId];
+            winner = peerId;
+        }
       })
-    })
+      alert(`Game finished. ${winner} wins with number ${highestNum}`);
+    }
+  }
+
+  connect() {
+    // Handle a chat connection.
+    var connectedPeers = this.state.connectedPeers
+    if (!connectedPeers[this.state.connectTo]) {
+      var c = peer.connect(this.state.connectTo, {
+        label: 'chat',
+        serialization: 'none',
+        metadata: {message: 'join game request'}
+      });
+      c.on('error', (err) => {
+        console.log(err)
+        alert(err)
+      });
+      c.on('open', (value) => {
+        connectedPeers[this.state.connectTo] = 1;
+        this.setState({
+          connectedPeers: connectedPeers
+        })
+        console.log("connected");
+      })
+    } else {
+      alert("already connected!")
+    }
+  }
+
+  handlePeerInput(e) {
+    this.setState({ connectTo: e.target.value })
   }
 
   render() {
+    let connections = []
+    for (let name in this.state.connectedPeers) {
+      connections.push(<li key="{name}">{name}</li>)
+    }
     return (
-      <div className="App">
-        <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" className="pure-menu-heading pure-menu-link">Truffle Box</a>
-        </nav>
-
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Good to Go!</h1>
-              <p>Your Truffle Box is installed and ready.</p>
-              <h2>Smart Contract Example</h2>
-              <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
-              <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
-              <p>The stored value is: {this.state.storageValue}</p>
-            </div>
-          </div>
-        </main>
+      <div id="actions">
+        Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
+        <br/>
+        Connect to a peer: <input type="text" id="rid"
+          onChange={(e) => this.handlePeerInput(e)}
+          placeholder="Someone else's id"></input>
+        <button className="connect" id="connect" onClick={() => this.connect()}>Connect</button>
+        {connections.length ? <button className="get-card">Deal a card</button>: ""}
+        <div id="gameInfo">
+          <div> Round: { this.state.round } </div>
+        </div>
+        <div id="connections">
+          {connections.length ? <ul>{connections}</ul> : "You have not made any connections"}
+        </div>
       </div>
     );
   }

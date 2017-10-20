@@ -3,6 +3,17 @@
 body,
 .pure-g [class*=pure-u] {
   font-family: 'Open Sans', sans-serif;
+  color: white;
+}
+
+button, input {
+  color: black;
+}
+
+body {
+  background: url('http://www.bostonherald.com/sites/default/files/styles/gallery/public/media/2014/12/26/12282014BlackjackTable.jpg?itok=tZVWyqvG') no-repeat;
+  background-size: cover;
+  padding: 15px;
 }
 
 h1, h2, h3 {
