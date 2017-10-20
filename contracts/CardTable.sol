@@ -224,7 +224,7 @@ contract CardTable {
   function addGame(Game g) private returns(uint256 gameId) {
     // retrieve id as part of array addition to save on gas
     gameId = games.push(g) - 1;
-    games[id].id = gameId;
+    games[gameId].id = gameId;
 
     return gameId;
   }
