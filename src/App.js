@@ -65,8 +65,26 @@ class App extends Component {
     }
   }
 
-  connect(c) {
+  connect() {
     // Handle a chat connection.
+    var requestedPeer = $('#rid').val();
+    var connectedPeers = this.state.connectedPeers
+    if (!connectedPeers[requestedPeer]) {
+      var c = peer.connect(requestedPeer, {
+        label: 'chat',
+        serialization: 'none',
+        metadata: {message: 'join game request'}
+      });
+      c.on('open', () => {
+        this.connect(c);
+      });
+      c.on('error', function(err) { alert(err); });
+    }
+    connectedPeers[requestedPeer] = 1;
+    this.setState({
+      connectedPeers: connectedPeers
+    })
+
     if (c.label === 'chat') {
       var chatbox = $('<div></div>').addClass('connection').addClass('active').attr('id', c.peer);
       var header = $('<h1></h1>').html('Chat with <strong>' + c.peer + '</strong>');
@@ -111,7 +129,6 @@ class App extends Component {
         })
       });
     }
-    var connectedPeers = this.state.get('connectedPeers')
     connectedPeers[c.peer] = 1
     this.setState({
       'connectedPeers': connectedPeers
@@ -124,7 +141,7 @@ class App extends Component {
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
         Connect to a peer: <input type="text" id="rid" placeholder="Someone else's id"></input>
-      <button className="connect" id="connect">Connect</button>
+      <button className="connect" id="connect" onClick={() => this.connect()}>Connect</button>
         <form id="send">
           <input type="text" id="text" placeholder="Enter number"></input>
           <button type="submit" >Send</button>
