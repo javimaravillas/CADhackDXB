@@ -119,11 +119,14 @@ class App extends Component {
         Connect to a peer: <input type="text" id="rid"
           onChange={(e) => this.handlePeerInput(e)}
           placeholder="Someone else's id"></input>
-      <button className="connect" id="connect" onClick={() => this.connect()}>Connect</button>
-      {connections.length ? <button className="get-card">Deal a card</button>: ""}
-      <div id="connections">
-        {connections.length ? <ul>{connections}</ul> : "You have not made any connections"}
-      </div>
+        <button className="connect" id="connect" onClick={() => this.connect()}>Connect</button>
+        {connections.length ? <button className="get-card">Deal a card</button>: ""}
+        <div id="gameInfo">
+          <div> Round: { this.state.round } </div>
+        </div>
+        <div id="connections">
+          {connections.length ? <ul>{connections}</ul> : "You have not made any connections"}
+        </div>
       </div>
     );
   }
