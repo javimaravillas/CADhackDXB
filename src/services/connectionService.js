@@ -34,7 +34,7 @@ const ConnectionService = () =>{
       });
     });
   }
-  function configureConnection(connection, callback) {
+  function configureConnection(connection, callbacks) {
     if(!connectedPeers[connection.peer]) {
       connection.on('error', (err) => {
         console.log(err);
@@ -45,13 +45,21 @@ const ConnectionService = () =>{
         connectedPeers[connection.peer] = connection;
         connection.on('data', (value) => {
           console.log('data', JSON.stringify({value}));
+          if(callbacks.afterData) {
+            callbacks.afterData(connection.peer, value);
+          }
         });
-        if(callback) {
-          callback(connection.peer);
+        if(callbacks.afterOpen) {
+          callbacks.afterOpen(connection.peer);
         }
       });
     }
   }
+
+  function getConnectionFor(address) {
+    return connectedPeers[address]
+  }
+
   function connect(peerId) {
     // Handle a chat connection.
     return new Promise((resolve, reject) => {
