@@ -11,6 +11,8 @@ function allGasUsedUp(txn) {
 contract('CardTable', function(accounts) {
   var ct;
 
+  var truffleBugWorkaround = 0;
+
   var u = {
     p0: accounts[0],
     p1: accounts[1],
@@ -30,7 +32,22 @@ contract('CardTable', function(accounts) {
       // check that an exception wasn't thrown
       assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, registerPlayer() threw an exception.");
 
-      return web3.eth.getBalance(contract.address);
+      return ct.registerPlayer("Player 1", {from: u.p1})
+    })
+    .then(function(txn) {
+      // check that an exception wasn't thrown
+      assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, registerPlayer() threw an exception.");
+
+      return ct.registerPlayer("Player 2", {from: u.p2})
+    })
+    .then(function(txn) {
+      // check that an exception wasn't thrown
+      assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, registerPlayer() threw an exception.");
+
+      return ct.playersCount(truffleBugWorkaround);
+    })
+    .then(function(count) {
+      assert.equal(count, 3, "Did not register the expected number of players.");
     });
   });
 

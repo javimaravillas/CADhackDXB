@@ -177,6 +177,11 @@ contract CardTable {
     return addressToPlayer[playerAccount];
   }
 
+  // retrieve the number of registered players
+  function playersCount(uint truffleBugWorkaround) public constant returns(uint256 count) {
+    return players.length;
+  }
+
   // check if a player is in a game
   function playerInGame(uint256 gameId, address playerAccount) private constant returns(bool exists) {
     for (uint i = 0; i < games[gameId].players.length; i++) {
