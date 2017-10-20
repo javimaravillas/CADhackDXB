@@ -62,7 +62,7 @@ class GameApp extends Component {
       }
     });
     this.setState({
-      master: playerAddresses[0]
+      master: "0x711b926dad3bf4a5aec55f3283275e2ae3931298"
     })
   }
 

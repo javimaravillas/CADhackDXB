@@ -9,7 +9,7 @@ const ConnectionService = () =>{
   function setup(address, connectedPeersCallback) {
     return new Promise((resolve, reject) => {
       peer = new Peer(address, {
-        host: '10.0.212.79',
+        host: '10.0.212.83',
         port: 9000,
         debug: 3,
         logFunction: function() {
