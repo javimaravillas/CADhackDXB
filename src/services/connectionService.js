@@ -44,7 +44,7 @@ const ConnectionService = () =>{
                 console.log("connected to: ", connection.peer);
                 connectedPeers[connection.peer] = connection;
                 connection.on('data', (value) => {
-                    console.log('data', {value});
+                    console.log('data', JSON.stringify({value}));
                 });
                 if(callback) {
                     callback(connection.peer);                    
