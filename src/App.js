@@ -8,7 +8,7 @@ import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
 
-var peer; 
+var peer;
 
 class App extends Component {
   constructor(props) {
@@ -86,9 +86,6 @@ class App extends Component {
         label: 'chat',
         serialization: 'none',
         metadata: {message: 'join game request'}
-      });
-      c.on('open', () => {
-        this.connect(c);
       });
       c.on('error', function(err) { alert(err); });
       connectedPeers[this.state.connectTo] = 1;
