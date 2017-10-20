@@ -296,7 +296,7 @@ contract CardTable {
 
     games[gameId].rounds[roundNum].invalidWinClaim = true;
 
-    ClaimedPlayerTimeout(gameId, roundNum, invalidWinAccount, msg.sender);
+    ClaimedInvalidWin(gameId, roundNum, invalidWinAccount, msg.sender);
 
     return true;
   }
