@@ -87,6 +87,9 @@ contract CardTable {
   // constructor and functions
   function CardTable() public {
 		owner = msg.sender;
+
+    // reset nextGame
+    nextGame = newGame();
 	}
 
   function updateNumPlayers(uint256 _numPlayers) public onlyByOwner() {
