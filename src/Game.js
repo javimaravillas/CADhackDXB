@@ -42,14 +42,23 @@ class GameApp extends Component {
   }
 
     connect() {
-	//connectionService.connect(this.state.connectTo);
-	this.props.connect(this.state.connectTo);
+	connectionService.connect(this.state.connectTo).then(() => {
+	    this.props.connect(this.state.connectTo);
+	});
     }
     
+    sendMessage() {
+	this.props.connections.map((connection, index) => {
+	    connectionService.send(connection,  "hello, world!");
+	})
+    }
+
     
     render() {
 	const connections = this.props.connections.map((connection, index) => {
-	    return (<li key={index}>{connection}</li>);
+	    return (<li key={index}>
+		      {connection}
+		    </li>);
 	});
     return (
 	    <div id="actions">
@@ -61,7 +70,7 @@ class GameApp extends Component {
           placeholder="Someone else's id"></input>
             <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
 	    { connections }
-        {connections.length ? <button className="get-card">Deal a card</button>: ""}
+        {connections.length ? <button onClick={() => this.sendMessage()} className="get-card">Deal a card</button>: ""}
       </div>
     );
   }

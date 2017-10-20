@@ -37,34 +37,38 @@ const ConnectionService = () =>{
 
   function connect(peerId) {
     // Handle a chat connection.
+      return new Promise((resolve, reject) => {
+	  if (!connectedPeers[peerId]) {
+	      console.log("connecting to peer: ", peerId);
+	      var c = peer.connect(peerId, {
+		  label: 'chat',
+		  serialization: 'none',
+		  metadata: {message: 'join game request'}
+	      });
+	      c.on('error', (err) => {
+		  console.log(err);
+		  alert(err);
+	      });
+	      c.on('open', (value) => {
+		  console.log("connected to: ", peerId, {value});
+		  resolve();
+	      });
+	      c.on('data', (value) => {
+		  console.log('data', {value});
+	      });
+	      
+	      connectedPeers[peerId] = c;
 
-    if (!connectedPeers[peerId]) {
-	console.log("connecting to peer: ", peerId);
-      var c = peer.connect(peerId, {
-        label: 'chat',
-        serialization: 'none',
-        metadata: {message: 'join game request'}
+	  } else {
+	      alert("already connected!", peerId);
+	  }
       });
-      c.on('error', (err) => {
-          console.log(err);
-          alert(err);
-      });
-      c.on('open', (value) => {
-          connectedPeers[peerId] = 1;
-          console.log("connected to: ", peerId, {value});
-      });
-	c.on('data', (value) => {
-	    console.log('data', {value});
-	});
-	
-    } else {
-	alert("already connected!", peerId);
-    }
   }
 
     function send(peerId, obj) {
 	const c = connectedPeers[peerId];
 	if (c) {
+	    console.log({c});	    
 	    c.send(obj);	    
 	} else {
 	    alert("You are not connect to: ", peerId);
