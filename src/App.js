@@ -16,6 +16,7 @@ class App extends Component {
 
     this.state = {
       peerId: '',
+      connectTo: '',
       round: 1,
       numPlayers: 3,
       numbers: {},
@@ -79,10 +80,9 @@ class App extends Component {
 
   connect() {
     // Handle a chat connection.
-    var requestedPeer = $('#rid').val();
     var connectedPeers = this.state.connectedPeers
-    if (!connectedPeers[requestedPeer]) {
-      var c = peer.connect(requestedPeer, {
+    if (!connectedPeers[this.state.connectTo]) {
+      var c = peer.connect(this.state.connectTo, {
         label: 'chat',
         serialization: 'none',
         metadata: {message: 'join game request'}
@@ -91,76 +91,37 @@ class App extends Component {
         this.connect(c);
       });
       c.on('error', function(err) { alert(err); });
+      connectedPeers[this.state.connectTo] = 1;
+      this.setState({
+        connectedPeers: connectedPeers
+      })
+    } else {
+      alert("already connected!")
     }
-    connectedPeers[requestedPeer] = 1;
-    this.setState({
-      connectedPeers: connectedPeers
-    })
+  }
 
-    if (c.label === 'chat') {
-      var chatbox = $('<div></div>').addClass('connection').addClass('active').attr('id', c.peer);
-      var header = $('<h1></h1>').html('Chat with <strong>' + c.peer + '</strong>');
-      var messages = $('<div><em>Peer connected.</em></div>').addClass('messages');
-      chatbox.append(header);
-      chatbox.append(messages);
-
-      // Select connection handler.
-      chatbox.on('click', function() {
-        if ($(this).attr('class').indexOf('active') === -1) {
-          $(this).addClass('active');
-        } else {
-          $(this).removeClass('active');
-        }
-      });
-      $('.filler').hide();
-      $('#connections').append(chatbox);
-
-      c.on('data', function(data) {
-        var num = parseInt(data, 10);
-        var numbers = this.state.get('numbers')
-        numbers[c.peer] = num;
-        this.setState({
-          'numbers': numbers
-        })
-        this.seeIfGameFinished();
-
-      messages.append('<div><span class="peer">' + c.peer + '</span>: ' + data +
-        '</div>');
-      });
-
-      c.on('close', function() {
-        alert(c.peer + ' has left.');
-        chatbox.remove();
-        if ($('.connection').length === 0) {
-          $('.filler').show();
-        }
-        var connectedPeers = this.state.get('connectedPeers')
-        delete connectedPeers[c.peer];
-        this.setState({
-          'connectedPeers': connectedPeers
-        })
-      });
-    }
-    connectedPeers[c.peer] = 1
-    this.setState({
-      'connectedPeers': connectedPeers
-    })
+  handlePeerInput(e) {
+    this.setState({ connectTo: e.target.value })
   }
 
   render() {
+    let connections = []
+    for (let name in this.state.connectedPeers) {
+      connections.push(<li key="{name}">{name}</li>)
+    }
     return (
       <div id="actions">
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
-        Connect to a peer: <input type="text" id="rid" placeholder="Someone else's id"></input>
+        Connect to a peer: <input type="text" id="rid"
+          onChange={(e) => this.handlePeerInput(e)}
+          placeholder="Someone else's id"></input>
       <button className="connect" id="connect" onClick={() => this.connect()}>Connect</button>
-        <form id="send">
-          <input type="text" id="text" placeholder="Enter number"></input>
-          <button type="submit" >Send</button>
-        </form>
-        <div id="connections">
-          <span className="filler">You have not yet made any connections.</span>
-        </div>
+      <button className="get-card">Deal a card</button>
+      <div id="connections">
+        <span className="filler">You have not yet made any connections.</span>
+        {connections.length ? <ul>{connections}</ul> : "No connections"}
+      </div>
       </div>
     );
   }
