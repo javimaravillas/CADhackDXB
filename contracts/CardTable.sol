@@ -176,7 +176,7 @@ contract CardTable {
   }
 
   // retrieve a player from the registry
-  function getPlayer(address playerAccount) private constant returns(bool exists, uint256 playerId) {
+  function getPlayer(address playerAccount) public constant returns(bool exists, uint256 playerId) {
     if (!playerExists(playerAccount)) {
       return (false, 0);
     }
