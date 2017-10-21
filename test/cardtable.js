@@ -41,30 +41,38 @@ contract('CardTable', function(accounts) {
       return contract.registerPlayer("Player 2", {from: u.p2})
     })
     .then(function(txn) {
+      console.log("registerPlayer(): " + JSON.stringify(txn, null, 2));
+
       // check that an exception wasn't thrown
       assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, registerPlayer() threw an exception.");
 
       return contract.playersCount();
     })
     .then(function(count) {
+      console.log("playersCount(): " + JSON.stringify(count, null, 2));
+
       assert.equal(count, 3, "Did not register the expected number of players.");
     
       return contract.joinGame({from: u.p0, value: buyInAmount})
     })
     .then(function(txn) {
+      console.log("u.p0: joinGame(): " + JSON.stringify(txn, null, 2));
+
       // check that an exception wasn't thrown
       assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, joinGame() threw an exception.");
 
       return contract.joinGame({from: u.p1, value: buyInAmount})
     })
     .then(function(txn) {
+      console.log("u.p1: joinGame(): " + JSON.stringify(txn, null, 2));
+
       // check that an exception wasn't thrown
       assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, joinGame() threw an exception.");
 
       return contract.joinGame({from: u.p2, value: buyInAmount})
     })
     .then(function(txn) {
-      // console.log(JSON.stringify(txn, null, 2));
+      console.log("u.p2: joinGame(): " + JSON.stringify(txn, null, 2));
 
       // check that an exception wasn't thrown
       assert.isNotTrue(allGasUsedUp(txn), "All gas was used up, joinGame() threw an exception.");
