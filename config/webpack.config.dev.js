@@ -113,7 +113,8 @@ module.exports = {
           /\.json$/,
           /\.woff$/,
           /\.woff2$/,
-          /\.(ttf|svg|eot)$/
+          /\.(ttf|svg|eot)$/,
+          /\.(jpg|png)$/
         ],
         loader: 'url',
         query: {
@@ -148,6 +149,10 @@ module.exports = {
       {
         test: /\.json$/,
         loader: 'json'
+      },
+      {
+        test: /\.(jpg|png)$/,
+        loader: 'url-loader'
       },
       // "file" loader for svg
       {
