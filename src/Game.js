@@ -55,7 +55,9 @@ class GameApp extends Component {
   getPlayerAddresses() {
     return [
       "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
-      "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
+      "0xc70f6e964540f7e031f428d7ba891307f6cf6e05",
+      "0x7d4917388e9a304b01a6a1c2e62b601684c7a825"
+    ];
   }
 
   connect() {
