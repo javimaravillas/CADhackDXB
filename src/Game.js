@@ -135,7 +135,7 @@ class GameApp extends Component {
       })
       this.checkEndGame()
     } else {
-      connectionService.send(this.state.master, { winningCard: card })
+      connectionService.send(this.state.master, { card: card })
       this.setState({
           cardUrl: this.getCardURL(card)
       })
