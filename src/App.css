@@ -11,6 +11,12 @@ button, input {
   display: inline-block;
 }
 
+.gameList {
+  width: 50%;
+  background-color: rgba(256, 256, 256, 0.7);
+  border-radius: 20px;
+}
+
 .connect, .get-card {
   margin: 10px 0px;  
 }
