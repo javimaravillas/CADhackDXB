@@ -51,6 +51,7 @@
   "dependencies": {
     "dotenv": "^2.0.0",
     "jquery": "^3.2.1",
+    "material-ui": "^0.19.4",
     "peer": "^0.2.8",
     "peerjs": "^0.3.14",
     "react": "^15.4.2",
