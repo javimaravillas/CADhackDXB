@@ -178,7 +178,7 @@ class GameApp extends Component {
 
   render() {
     const connections = this.props.connections.map((connection, index) => {
-      return (<ListItem rightAvatar={<Avatar src={require(`./images/avatar${index+1}.jpg`)}/>} primaryText={connection} key={index}/>);
+      return (<ListItem rightAvatar={<Avatar src={require(`./images/avatar${index+2}.jpg`)}/>} primaryText={connection} key={index}/>);
     });
 
     return (
@@ -191,6 +191,7 @@ class GameApp extends Component {
         { connections.length ?
         <div>
           <List className="gameList">
+            <ListItem rightAvatar={<Avatar src={require(`./images/avatar1.jpg`)}/>} primaryText={this.state.peerId + " (You)"} />
             { connections }
           </List>
           <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
