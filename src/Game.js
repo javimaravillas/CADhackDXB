@@ -3,11 +3,8 @@ import getWeb3 from './utils/getWeb3';
 import connectionService from './services/connectionService';
 import { connect } from 'react-redux';
 import RaisedButton from 'material-ui/RaisedButton';
-<<<<<<< HEAD
-=======
 import { List, ListItem } from 'material-ui/List';
 import Avatar from 'material-ui/Avatar';
->>>>>>> add more styling for game connections
 
 import './css/oswald.css'
 import './css/open-sans.css'
