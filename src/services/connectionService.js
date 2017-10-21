@@ -30,6 +30,7 @@ const ConnectionService = () =>{
       // Await connections from others
       peer.on('connection', (c) => {
         console.log('connection', c);
+        connectedPeersCallback.resolve = resolve
         configureConnection(c, connectedPeersCallback);
       });
     });
