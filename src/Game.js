@@ -3,12 +3,16 @@ import getWeb3 from './utils/getWeb3';
 import connectionService from './services/connectionService';
 import { connect } from 'react-redux';
 import RaisedButton from 'material-ui/RaisedButton';
+<<<<<<< HEAD
+=======
+import { List, ListItem } from 'material-ui/List';
+import Avatar from 'material-ui/Avatar';
+>>>>>>> add more styling for game connections
 
 import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
-
 
 class GameApp extends Component {
   constructor(props) {
@@ -168,8 +172,9 @@ class GameApp extends Component {
 
   render() {
     const connections = this.props.connections.map((connection, index) => {
-      return (<li key={index}> {connection} </li>);
+      return (<ListItem rightAvatar={<Avatar src={require(`./images/avatar${index+1}.jpg`)}/>} primaryText={connection} key={index}/>);
     });
+    
     return (
       <div id="actions">
         <h1 className="header"> P2P Protocol for off-chain communication during real-time game play </h1>
@@ -177,10 +182,14 @@ class GameApp extends Component {
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
         <RaisedButton label="Join Game" className="connect" id="connect" onClick={(e) => this.connect()} />
-        { connections }
-        { connections.length ?
+        { connections.length ? 
+        <div>
+          <List className="gameList">
+            { connections }
+          </List>
           <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
-          : ""
+            </div>
+          : "" 
         }
         <img src={ this.state.cardUrl }></img>
       </div>
