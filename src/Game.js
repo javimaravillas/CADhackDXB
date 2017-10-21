@@ -102,19 +102,35 @@ class GameApp extends Component {
   }
 
   drawCard() {
-      return parseInt(Math.random() * 52) + 1
+      return parseInt(Math.random() * 52, 10) + 1
+  }
+
+  getCardURL(cardNumber) {
+      let cards = {10: "J", 11: "Q", 12: "K", 13: "A"}
+      let suites = {1: "C", 2: "H", 3: "D", 4: "S"}
+      let card = (cardNumber % 13) + 1
+      card = card > 9 ? cards[card] : (card + 1) + ""
+      let suite = suites[(cardNumber % 4) + 1]
+
+      return "https://deckofcardsapi.com/static/img/" + card + suite + ".png"
   }
 
   dealCard() {
+    let card = this.drawCard()
     if(this.isMaster()) {
       let peers = this.state.peers
-      peers[this.state.peerId] = this.drawCard()
+      peers[this.state.peerId] = card
       this.setState({
-        peers: peers
+        peers: peers,
+        cardUrl: this.getCardURL(card)
       })
+
       this.checkEndGame()
     } else {
-      connectionService.send(this.state.master, { card: this.drawCard() })
+      connectionService.send(this.state.master, { card: card })
+      this.setState({
+          cardUrl: this.getCardURL(card)
+      })
     }
   }
 
@@ -166,6 +182,7 @@ class GameApp extends Component {
           <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
           : ""
         }
+        <img src={ this.state.cardUrl }></img>
       </div>
     );
   }
