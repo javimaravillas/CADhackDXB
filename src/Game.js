@@ -86,7 +86,7 @@ class GameApp extends Component {
     if (data.winner) {
       this.endRound(data.winner)
       this.setState({
-        winningCardURL: this.getCardURL(data.card)
+        winningCardURL: this.getCardURL(data.winningCard)
       })
     }
   }
@@ -98,7 +98,7 @@ class GameApp extends Component {
       this.props.connections.map(address =>
         connectionService.send(address, {
           winner: winner,
-          card: this.state.peers[winner]
+          winningCard: this.state.peers[winner]
         }))
       this.endRound(winner)
     } else {
@@ -133,10 +133,9 @@ class GameApp extends Component {
         peers: peers,
         cardUrl: this.getCardURL(card)
       })
-
       this.checkEndGame()
     } else {
-      connectionService.send(this.state.master, { card: card })
+      connectionService.send(this.state.master, { winningCard: card })
       this.setState({
           cardUrl: this.getCardURL(card)
       })
@@ -179,7 +178,7 @@ class GameApp extends Component {
     const connections = this.props.connections.map((connection, index) => {
       return (<ListItem rightAvatar={<Avatar src={require(`./images/avatar${index+1}.jpg`)}/>} primaryText={connection} key={index}/>);
     });
-    
+
     return (
       <div id="actions">
         <h1 className="header"> P2P Protocol for off-chain communication during real-time game play </h1>
@@ -187,14 +186,14 @@ class GameApp extends Component {
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
         <RaisedButton label="Join Game" className="connect" id="connect" onClick={(e) => this.connect()} />
-        { connections.length ? 
+        { connections.length ?
         <div>
           <List className="gameList">
             { connections }
           </List>
           <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
             </div>
-          : "" 
+          : ""
         }
         <br/>
         <img className="card" src={ this.state.cardUrl }></img>
