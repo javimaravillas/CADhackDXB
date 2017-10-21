@@ -18,7 +18,8 @@ class GameApp extends Component {
       peers: {},
       master: '',
       connectTo: '',
-      connected: false
+      connected: false,
+      winningCardURL: ''
     };
   }
 
@@ -73,7 +74,8 @@ class GameApp extends Component {
   }
 
   endRound(winner) {
-    alert(winner)
+    const msg = winner === this.state.peerId ? "You win!" : "You lose!"
+    alert(msg)
   }
 
   handleData(address, data) {
@@ -82,6 +84,9 @@ class GameApp extends Component {
     }
     if (data.winner) {
       this.endRound(data.winner)
+      this.setState({
+        winningCardURL: this.getCardURL(data.card)
+      })
     }
   }
 
@@ -90,7 +95,10 @@ class GameApp extends Component {
       const winner = this.calculateWinner()
       // refactor to remove self !!!
       this.props.connections.map(address =>
-        connectionService.send(address, {winner: winner}))
+        connectionService.send(address, {
+          winner: winner,
+          card: this.state.peers[winner]
+        }))
       this.endRound(winner)
     } else {
       console.log(this.state.peers)
@@ -182,7 +190,9 @@ class GameApp extends Component {
           <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
           : ""
         }
-        <img src={ this.state.cardUrl }></img>
+        <br/>
+        <img className="card" src={ this.state.cardUrl }></img>
+        { this.state.winningCardURL ? <img className="card" src={ this.state.winningCardURL }></img> : "" }
       </div>
     );
   }

@@ -12,9 +12,9 @@ button, input {
 }
 
 .connect, .get-card {
-  margin: 10px 0px;  
+  margin: 10px 0px;
 }
-.header 
+.header
 {
   max-width: 60%;
 }
@@ -23,6 +23,10 @@ body {
   background: url('http://www.bostonherald.com/sites/default/files/styles/gallery/public/media/2014/12/26/12282014BlackjackTable.jpg?itok=tZVWyqvG') no-repeat;
   background-size: cover;
   padding: 15px;
+}
+
+img.card {
+  margin: 0px auto;
 }
 
 h1, h2, h3 {
