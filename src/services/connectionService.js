@@ -30,6 +30,7 @@ const ConnectionService = () =>{
       // Await connections from others
       peer.on('connection', (c) => {
         console.log('connection', c);
+        connectedPeersCallback.resolve = resolve
         configureConnection(c, connectedPeersCallback);
       });
     });
@@ -38,7 +39,7 @@ const ConnectionService = () =>{
     if(!connectedPeers[connection.peer]) {
       connection.on('error', (err) => {
         console.log(err);
-        alert(err);
+        //alert(err);
       });
       connection.on('open', () => {
         console.log("connected to: ", connection.peer);
@@ -52,9 +53,9 @@ const ConnectionService = () =>{
         if(callbacks.afterOpen) {
           callbacks.afterOpen(connection.peer);
         }
+        callbacks.resolve()
       });
     }
-    callbacks.resolve()
   }
 
   function connect(peerId, callbacks) {

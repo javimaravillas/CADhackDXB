@@ -8,12 +8,39 @@ body,
 
 button, input {
   color: black;
+  display: inline-block;
+}
+
+.gameList {
+  width: 50%;
+  background-color: rgba(256, 256, 256, 0.7);
+  border-radius: 20px;
+}
+
+.connect, .get-card {
+  margin: 10px 0px;
+}
+
+.card-avatar
+{
+  border-radius: unset !important;
+  height: 50px !important;
+  top: 2px !important;
+}
+
+.header
+{
+  max-width: 60%;
 }
 
 body {
   background: url('http://www.bostonherald.com/sites/default/files/styles/gallery/public/media/2014/12/26/12282014BlackjackTable.jpg?itok=tZVWyqvG') no-repeat;
   background-size: cover;
   padding: 15px;
+}
+
+img.card {
+  margin: 0px auto;
 }
 
 h1, h2, h3 {

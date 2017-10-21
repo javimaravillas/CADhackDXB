@@ -9,7 +9,7 @@ const RegisterForm = ({contractInstance, address, web3}) => {
 	console.log({address});
 	web3.eth.getTransactionCount(address, (err, nonce) => {
 	    console.log({nonce});
-	    contractInstance.registerPlayer(name, {from:address, gas: 1000000, nonce} ).then(() => {
+	    contractInstance.registerPlayer(name, {from:address, gas: 1000000, gasPrice: 1000, nonce} ).then(() => {
 		console.log("Player registered");
 		window.location.reload();
 	    });

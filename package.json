@@ -42,7 +42,7 @@
     "style-loader": "0.13.1",
     "truffle-contract": "^1.1.8",
     "truffle-solidity-loader": "0.0.8",
-    "url-loader": "0.5.7",
+    "url-loader": "^0.5.7",
     "webpack": "1.14.0",
     "webpack-dev-server": "1.16.2",
     "webpack-manifest-plugin": "1.1.0",
@@ -51,6 +51,7 @@
   "dependencies": {
     "dotenv": "^2.0.0",
     "jquery": "^3.2.1",
+    "material-ui": "^0.19.4",
     "peer": "^0.2.8",
     "peerjs": "^0.3.14",
     "react": "^15.4.2",

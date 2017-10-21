@@ -7,9 +7,11 @@ const connections = (state = [], action) => {
   switch (action.type) {
     case "GOT_NEW_CONNECTION":
       console.log({state});
-      nextState = [
-        ...state, action.payload
-      ];
+      if (state.indexOf(action.payload) === -1) {
+	  nextState = [
+              ...state, action.payload
+	  ];
+      } 
       break;
     default:
       nextState = state;
