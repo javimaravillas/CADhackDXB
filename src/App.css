@@ -20,6 +20,14 @@ button, input {
 .connect, .get-card {
   margin: 10px 0px;
 }
+
+.card-avatar
+{
+  border-radius: unset !important;
+  height: 50px !important;
+  top: 2px !important;
+}
+
 .header
 {
   max-width: 60%;

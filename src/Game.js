@@ -133,15 +133,13 @@ class GameApp extends Component {
       peers[this.state.peerId] = card
       this.setState({
         peers: peers,
-        cardUrl: this.getCardURL(card)
       })
       this.checkEndGame()
-    } else {
-      connectionService.send(this.state.master, { card: card })
-      this.setState({
-          cardUrl: this.getCardURL(card)
-      })
-    }
+    } 
+    connectionService.send(this.state.master, { card: card })
+    this.setState({
+        cardUrl: this.getCardURL(card)
+    })
   }
 
   roundIsOver() {
@@ -165,20 +163,21 @@ class GameApp extends Component {
   }
 
   acceptCard(address, data) {
-    if (!this.isMaster()) {
-      throw new Error("Only the master can accept cards!")
-    }
     let peers = this.state.peers
     peers[address] = data.card
     this.setState({
       peers: peers
     })
-    this.checkEndGame()
+    if (!this.isMaster()) {
+      throw new Error("Only the master can end game!")
+    } else {
+      this.checkEndGame()      
+    }
   }
 
   render() {
     const connections = this.props.connections.map((connection, index) => {
-      return (<ListItem rightAvatar={<Avatar src={require(`./images/avatar${index+2}.jpg`)}/>} primaryText={connection} key={index}/>);
+      return (<ListItem rightAvatar={this.state.peers[connection] ? <Avatar className="card-avatar" src={this.getCardURL()}/> : undefined} leftAvatar={<Avatar src={require(`./images/avatar${index+2}.jpg`)}/>} primaryText={connection} key={index}/>);
     });
 
     return (
@@ -191,7 +190,7 @@ class GameApp extends Component {
         { connections.length ?
         <div>
           <List className="gameList">
-            <ListItem rightAvatar={<Avatar src={require(`./images/avatar1.jpg`)}/>} primaryText={this.state.peerId + " (You)"} />
+            <ListItem rightAvatar={this.state.cardUrl ? <Avatar className="card-avatar" src={this.state.cardUrl}/> : undefined} leftAvatar={<Avatar src={require(`./images/avatar1.jpg`)}/>} primaryText={this.state.peerId + " (You)"} />
             { connections }
           </List>
           <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
