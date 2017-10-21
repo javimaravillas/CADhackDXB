@@ -2,7 +2,8 @@ import React, {Component } from 'react';
 import getWeb3 from './utils/getWeb3';
 import connectionService from './services/connectionService';
 import { connect } from 'react-redux';
-
+import CardTableContract from '../build/contracts/CardTable.json';
+import RegisterForm from './RegisterForm';
 import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
@@ -13,11 +14,14 @@ class GameApp extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      peerId: '',
-      peers: {},
-      master: '',
-      connectTo: '',
-      connected: false
+	peerId: '',
+	peers: {},
+	master: '',
+	connectTo: '',
+	connected: false,
+	address: "",
+	web3: null,
+	cardTableInstance: null
     };
   }
 
@@ -31,6 +35,10 @@ class GameApp extends Component {
         if(error) {
           console.log(error);
         } else {
+	    this.setState({address: accounts[0]});
+
+	    // Instantiate contract once web3 provided.
+	    this.instantiateContract();
           connectionService.setup(
             accounts[0], {
               afterOpen: this.props.updateConnectedPeers,
@@ -49,6 +57,23 @@ class GameApp extends Component {
     });
   }
 
+    instantiateContract() {
+	const contract = require('truffle-contract');
+	const cardTable = contract(CardTableContract);
+	cardTable.setProvider(this.state.web3.currentProvider);
+
+	// Declaring this for later so we can chain functions on SimpleStorage.
+	var cardTableInstance;
+
+	// Get accounts.
+	this.state.web3.eth.getAccounts((error, accounts) => {
+	    cardTable.deployed().then((instance) => {
+		this.setState({cardTableInstance: instance});
+	    });
+	});
+
+    }
+    
   connect() {
     const playerAddresses = [
       "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
@@ -114,7 +139,7 @@ class GameApp extends Component {
       "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
     return playerAddresses.map(address =>
       this.state.peers[address] !== undefined
-    ).every(b => b)
+			      ).every(b => b);
   }
 
   calculateWinner() {
@@ -138,7 +163,7 @@ class GameApp extends Component {
     peers[address] = data.card
     this.setState({
       peers: peers
-    })
+    });
     this.checkEndGame()
   }
 
@@ -146,11 +171,21 @@ class GameApp extends Component {
     const connections = this.props.connections.map((connection, index) => {
       return (<li key={index}> {connection} </li>);
     });
+      
+    const isRegistered = false;      
+      
     return (
       <div id="actions">
-        {this.state.connected ? (<div>Connected </div>) : (<div>Not Connected </div>)   } <br/>
-        Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
-        <br/>
+            {this.state.connected ? (<div>Connected </div>) : (<div>Not Connected </div>)   }
+	    <br/>
+	    Your address: {this.state.address} <br/>
+            Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
+            <br/>
+	    <br/>
+	    
+	    { <RegisterForm /> }
+	    <br/>
+	    <div>
         Connect to a peer: <input type="text" id="rid"
         onChange={(e) => this.setState({connectTo: e.target.value}) }
         placeholder="Someone else's id"></input>
@@ -158,6 +193,7 @@ class GameApp extends Component {
         { connections }
         { connections.length ? <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: "" }
       </div>
+    </div>
     );
   }
 }
