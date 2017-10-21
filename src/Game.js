@@ -2,6 +2,7 @@ import React, {Component } from 'react';
 import getWeb3 from './utils/getWeb3';
 import connectionService from './services/connectionService';
 import { connect } from 'react-redux';
+import RaisedButton from 'material-ui/RaisedButton';
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -151,15 +152,16 @@ class GameApp extends Component {
     });
     return (
       <div id="actions">
-        { this.state.connected ? (<div>Connected </div>) : (<div>Not Connected </div>) } <br/>
+        <h1 className="header"> P2P Protocol for off-chain communication during real-time game play </h1>
+        <div>Status: {this.state.connected ? "Connected" : "Not Connected" } </div>
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
-        Connect to a peer: <input type="text" id="rid"
-        onChange={(e) => this.setState({connectTo: e.target.value}) }
-        placeholder="Someone else's id"></input>
-        <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
+        <RaisedButton label="Join Game" className="connect" id="connect" onClick={(e) => this.connect()} />
         { connections }
-        { connections.length ? <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: "" }
+        { connections.length ? 
+          <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
+          : "" 
+        }
       </div>
     );
   }

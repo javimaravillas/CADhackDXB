@@ -8,6 +8,15 @@ body,
 
 button, input {
   color: black;
+  display: inline-block;
+}
+
+.connect, .get-card {
+  margin: 10px 0px;  
+}
+.header 
+{
+  max-width: 60%;
 }
 
 body {
