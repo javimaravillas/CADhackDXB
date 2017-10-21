@@ -1,13 +1,24 @@
 import React, {Component } from 'react';
 
 
-const RegisterForm = () => {
+const RegisterForm = ({contractInstance, address, web3}) => {
 
     let name;
 
     const register = () => {
-	alert(name);
+	console.log({address});
+	web3.eth.getTransactionCount(address, (err, nonce) => {
+	    console.log({nonce});
+	    contractInstance.registerPlayer(name, {from:address, gas: 1000000, nonce} ).then(() => {
+		console.log("Player registered");
+		window.location.reload();
+	    });
+	});
     };
+
+    if (!contractInstance) {
+	return (<div> loading... </div>);
+    }
     
     return (
 	<div>

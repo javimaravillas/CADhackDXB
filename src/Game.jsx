@@ -4,6 +4,7 @@ import connectionService from './services/connectionService';
 import { connect } from 'react-redux';
 import CardTableContract from '../build/contracts/CardTable.json';
 import RegisterForm from './RegisterForm';
+import JoinForm from './JoiningForm';
 import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
@@ -21,33 +22,37 @@ class GameApp extends Component {
 	connected: false,
 	address: "",
 	web3: null,
-	cardTableInstance: null
+	cardTableInstance: null,
+	isRegistered: 0,  // have not checked yet
+	playerName: ""
     };
   }
 
-  componentWillMount() {
-    getWeb3.then(results => {
-      this.setState({
-        web3: results.web3,
-        master: "0x711b926dad3bf4a5aec55f3283275e2ae3931298"
-      });
+    componentWillMount() {
+	const accountIndex = this.getParamFromUrl();
+	getWeb3.then(results => {
+	    this.setState({
+		web3: results.web3,
+		master: "0x711b926dad3bf4a5aec55f3283275e2ae3931298"
+	    });
       results.web3.eth.getAccounts((error, accounts) => {
-        if(error) {
-          console.log(error);
-        } else {
-	    this.setState({address: accounts[0]});
-
-	    // Instantiate contract once web3 provided.
-	    this.instantiateContract();
-          connectionService.setup(
-            accounts[0], {
-              afterOpen: this.props.updateConnectedPeers,
-              afterData: this.handleData
-            })
-          .then((id) => {
+          if(error) {
+              console.log(error);
+          } else {
+	      console.log({accounts});
+	      this.setState({address: accounts[accountIndex]});
+	      
+	      // Instantiate contract once web3 provided.
+	      this.instantiateContract();
+              connectionService.setup(
+		  accounts[accountIndex], {
+		      afterOpen: this.props.updateConnectedPeers,
+		      afterData: this.handleData
+		  })
+		  .then((id) => {
             this.setState({
-              'peerId': id,
-              connected: true
+		'peerId': id,
+		connected: true
             });
           });
         }
@@ -69,9 +74,27 @@ class GameApp extends Component {
 	this.state.web3.eth.getAccounts((error, accounts) => {
 	    cardTable.deployed().then((instance) => {
 		this.setState({cardTableInstance: instance});
+		return instance
+	    }).then((instance) => {
+		instance.getPlayerId.call(this.state.address).then((result) => {
+		    if (result[0]) {
+			instance.players(result[1]).then((result) => {
+			    this.setState({
+				isRegistered: 1,
+				playerName: result[1]
+			    });
+			});
+		    }
+		});
 	    });
 	});
+    }
 
+    getParamFromUrl() {
+	var url_string = window.location.href;
+	var url = new URL(url_string);
+	var c = url.searchParams.get("account");
+	return c || 0;
     }
     
   connect() {
@@ -172,7 +195,18 @@ class GameApp extends Component {
       return (<li key={index}> {connection} </li>);
     });
       
-    const isRegistered = false;      
+      const isRegistered = (this.state.isRegistered === 1) ? true : false;      
+      
+      // const joiningPeersForm = (
+      // 	  <div>
+      //   Connect to a peer: <input type="text" id="rid"
+      //   onChange={(e) => this.setState({connectTo: e.target.value}) }
+      //   placeholder="Someone else's id"></input>
+      //   <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
+      //   { connections }
+      //   { connections.length ? <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: "" }
+      //   </div>
+      // );
       
     return (
       <div id="actions">
@@ -182,17 +216,10 @@ class GameApp extends Component {
             Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
             <br/>
 	    <br/>
-	    
-	    { <RegisterForm /> }
-	    <br/>
-	    <div>
-        Connect to a peer: <input type="text" id="rid"
-        onChange={(e) => this.setState({connectTo: e.target.value}) }
-        placeholder="Someone else's id"></input>
-        <button className="connect" id="connect" onClick={(e) => this.connect()}>Connect</button>
-        { connections }
-        { connections.length ? <button onClick={() => this.dealCard()} className="get-card">Deal a card</button>: "" }
-      </div>
+	    { isRegistered ?  
+	      <JoinForm address={this.state.address} name={this.state.playerName} contractInstance={this.state.cardTableInstance} web3={this.state.web3}/> :
+	      (<RegisterForm address={this.state.address} contractInstance={this.state.cardTableInstance} web3={this.state.web3}/>) 
+	    }
     </div>
     );
   }
