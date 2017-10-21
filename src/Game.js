@@ -101,16 +101,20 @@ class GameApp extends Component {
     return this.state.master === this.state.peerId
   }
 
+  drawCard() {
+      return parseInt(Math.random() * 52) + 1
+  }
+
   dealCard() {
     if(this.isMaster()) {
       let peers = this.state.peers
-      peers[this.state.peerId] = Math.random()
+      peers[this.state.peerId] = this.drawCard()
       this.setState({
         peers: peers
       })
       this.checkEndGame()
     } else {
-      connectionService.send(this.state.master, { card: Math.random() })
+      connectionService.send(this.state.master, { card: this.drawCard() })
     }
   }
 
@@ -158,9 +162,9 @@ class GameApp extends Component {
         <br/>
         <RaisedButton label="Join Game" className="connect" id="connect" onClick={(e) => this.connect()} />
         { connections }
-        { connections.length ? 
+        { connections.length ?
           <RaisedButton label="Deal a Card" onClick={() => this.dealCard()} className="get-card" />
-          : "" 
+          : ""
         }
       </div>
     );
