@@ -1,6 +1,6 @@
-var SimpleStorage = artifacts.require("./SimpleStorage.sol");
+var SimpleStorage = artifacts.require("./CardTable.sol");
 
-contract('SimpleStorage', (accounts) => {
+contract('CardTable', (accounts) => {
 
     describe("game", () =>  {
 	it("should has current round number", () => {

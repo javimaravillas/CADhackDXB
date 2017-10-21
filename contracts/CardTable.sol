@@ -176,8 +176,12 @@ contract CardTable {
   }
 
   // retrieve a player from the registry
-  function getPlayer(address playerAccount) private constant returns(uint256 p) {
-    return addressToPlayer[playerAccount];
+  function getPlayerId(address playerAccount) public constant returns(bool exists, uint256 playerId) {
+    if (!playerExists(playerAccount)) {
+      return (false, 0);
+    }
+
+    return (true, addressToPlayer[playerAccount]);
   }
 
   // retrieve the number of registered players
@@ -235,12 +239,14 @@ contract CardTable {
   // called by a player who wishes to join a game
   function joinGame() public payable returns(bool success) {
     require(msg.value == buyInAmount);
-    require(playerExists(msg.sender));
     require(!playerInNextGame(msg.sender));
 
     // add to nextGame
-    uint256 p = getPlayer(msg.sender);
-    nextGame.players.push(p);
+    bool exists;
+    uint256 playerId;
+    (exists, playerId) = getPlayerId(msg.sender);
+    require(exists);
+    nextGame.players.push(playerId);
     WaitingForGame(msg.sender, buyInAmount);
 
     // if nextGame is full, start the game
