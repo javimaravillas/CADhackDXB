@@ -25,7 +25,7 @@ class GameLogicComponent extends Component {
 		afterData: (addr, data) => this.handleData(addr, data)
 	    })
 	    .then((id) => {
-		this.connect();		
+		this.connect();
 		this.setState({
 		    'peerId': id,
 		    connected: true,
@@ -33,9 +33,9 @@ class GameLogicComponent extends Component {
 		});
 	    });
     }
-    
 
-    
+
+
   connect() {
       const playerAddresses = this.props.playerAccounts;
       playerAddresses.forEach((address) => {
@@ -113,7 +113,8 @@ class GameLogicComponent extends Component {
   }
 
   drawCard() {
-      return parseInt(Math.random() * 52, 10) + 1
+      const num = parseInt(Math.random() * 52, 10) + 1
+      return num === 50 ? 51 : num
   }
 
   getCardURL(cardNumber) {
@@ -125,7 +126,7 @@ class GameLogicComponent extends Component {
 
       return "https://deckofcardsapi.com/static/img/" + card + suite + ".png"
   }
-    
+
     dealCard() {
 	let card = this.drawCard();
 	if(this.isMaster()) {
@@ -172,7 +173,7 @@ class GameLogicComponent extends Component {
     if (!this.isMaster()) {
 	throw new Error("Only the master can end game!");
     } else {
-	this.checkEndGame();	
+	this.checkEndGame();
     }
   }
 
@@ -194,7 +195,7 @@ class GameLogicComponent extends Component {
 	return (
 	    <div>
 	      <div>Status: {this.state.connected ? "Connected" : "Not Connected" } </div>
-	      Your PeerJS ID is <span id="pid">{this.props.address}</span>	 
+	      Your PeerJS ID is <span id="pid">{this.props.address}</span>
 	      <br/>
 	      {connectionComponent}
               { this.props.address === this.props.master && this.state.gameOver ?
@@ -205,7 +206,7 @@ class GameLogicComponent extends Component {
 		    { this.state.winningCardURL ? <img className="card" src={ this.state.winningCardURL }></img> : "" }
 	    </div>
 	 );
-    }    
+    }
 }
 
 
@@ -224,5 +225,3 @@ const mapDispatchToProps = (dispatch) => {
 
 
 export default connect(mapStateToProps, mapDispatchToProps)(GameLogicComponent);
-
-    
