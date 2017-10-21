@@ -80,7 +80,7 @@ class GameApp extends Component {
   }
 
   checkEndGame() {
-    if (this.isRoundOver()) {
+    if (this.roundIsOver()) {
       const winner = this.calculateWinner()
       // refactor to remove self !!!
       this.props.connections.map(address =>
@@ -108,7 +108,7 @@ class GameApp extends Component {
     }
   }
 
-  isRoundOver() {
+  roundIsOver() {
     const playerAddresses = [
       "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
       "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];

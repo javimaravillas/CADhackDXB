@@ -52,9 +52,9 @@ const ConnectionService = () =>{
         if(callbacks.afterOpen) {
           callbacks.afterOpen(connection.peer);
         }
+        callbacks.resolve()
       });
     }
-    callbacks.resolve()
   }
 
   function connect(peerId, callbacks) {
