@@ -198,7 +198,7 @@ class GameApp extends Component {
 
   render() {
     const connections = this.props.connections.map((connection, index) => {
-      return (<ListItem rightAvatar={this.state.peers[connection] ? <Avatar className="card-avatar" src={this.getCardURL()}/> : undefined} leftAvatar={<Avatar src={require(`./images/avatar${index+2}.jpg`)}/>} primaryText={connection} key={index}/>);
+      return (<ListItem rightAvatar={this.state.peers[connection] ? <Avatar className="card-avatar" src={this.getCardURL(this.state.peers[connection])}/> : undefined} leftAvatar={<Avatar src={require(`./images/avatar${index+2}.jpg`)}/>} primaryText={connection} key={index}/>);
     });
 
     return (
