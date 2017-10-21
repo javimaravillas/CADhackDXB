@@ -20,6 +20,7 @@ class GameApp extends Component {
       master: '',
       connectTo: '',
       connected: false,
+      gameOver: false,
       winningCardURL: ''
     };
   }
@@ -93,7 +94,10 @@ class GameApp extends Component {
     }
   }
 
-  checkEndGame() {
+  reveal() {
+    if (!this.isMaster()) {
+      throw new Error("Only the master can reveal the winner!")
+    }
     if (this.roundIsOver()) {
       const winner = this.calculateWinner()
       // refactor to remove self !!!
@@ -103,6 +107,23 @@ class GameApp extends Component {
           winningCard: this.state.peers[winner]
         }))
       this.endRound(winner)
+    } else {
+      console.error("the round is not over!")
+    }
+  }
+
+  checkEndGame() {
+    if (this.roundIsOver()) {
+      const winner = this.calculateWinner()
+      // refactor to remove self !!!
+      this.props.connections.map(address =>
+        connectionService.send(address, {
+          winner: winner,
+          winningCard: this.state.peers[winner]
+        }))
+      this.setState({
+        gameOver: true
+      })
     } else {
       console.log(this.state.peers)
     }
@@ -135,7 +156,7 @@ class GameApp extends Component {
         peers: peers,
       })
       this.checkEndGame()
-    } 
+    }
     connectionService.send(this.state.master, { card: card })
     this.setState({
         cardUrl: this.getCardURL(card)
@@ -171,7 +192,7 @@ class GameApp extends Component {
     if (!this.isMaster()) {
       throw new Error("Only the master can end game!")
     } else {
-      this.checkEndGame()      
+      this.checkEndGame()
     }
   }
 
@@ -197,6 +218,10 @@ class GameApp extends Component {
             </div>
           : ""
         }
+        { this.state.peerId === this.state.master && this.state.gameOver ?
+          <RaisedButton label="Reveal winner" className="reveal" id="reveal" onClick={(e) => this.reveal()} />
+          : ""
+        }<br/>
         <br/>
         <img className="card" src={ this.state.cardUrl }></img>
         { this.state.winningCardURL ? <img className="card" src={ this.state.winningCardURL }></img> : "" }
