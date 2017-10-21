@@ -25,7 +25,7 @@ class GameApp extends Component {
     getWeb3.then(results => {
       this.setState({
         web3: results.web3,
-        master: "0x711b926dad3bf4a5aec55f3283275e2ae3931298"
+        master: "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"
       });
       results.web3.eth.getAccounts((error, accounts) => {
         if(error) {
@@ -33,8 +33,8 @@ class GameApp extends Component {
         } else {
           connectionService.setup(
             accounts[0], {
-              afterOpen: this.props.updateConnectedPeers,
-              afterData: this.handleData
+              afterOpen: (addr) => this.props.updateConnectedPeers(addr),
+              afterData: (addr, data) => this.handleData(addr, data)
             })
           .then((id) => {
             this.setState({
@@ -49,19 +49,24 @@ class GameApp extends Component {
     });
   }
 
-  connect() {
-    const playerAddresses = [
+  getPlayerAddresses() {
+    return [
       "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
       "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
+  }
+
+  connect() {
+    const playerAddresses = this.getPlayerAddresses()
     playerAddresses.forEach((address) => {
       if(address !== this.state.peerId) {
         const callbacks = {
-          afterOpen: () => this.props.updateConnectedPeers(),
+          afterOpen: (addr) => this.props.updateConnectedPeers(addr),
           afterData: (addr, data) => this.handleData(addr, data)
         }
-        connectionService.connect(address, callbacks).then(() => {
-          this.props.updateConnectedPeers(address);
-        });
+        connectionService.connect(address, callbacks)
+        .then(() => {
+          console.log(this.state.connectedPeers)
+        })
       }
     });
   }
@@ -109,9 +114,7 @@ class GameApp extends Component {
   }
 
   roundIsOver() {
-    const playerAddresses = [
-      "0x711b926dad3bf4a5aec55f3283275e2ae3931298",
-      "0xc70f6e964540f7e031f428d7ba891307f6cf6e05"];
+    const playerAddresses = this.getPlayerAddresses()
     return playerAddresses.map(address =>
       this.state.peers[address] !== undefined
     ).every(b => b)
@@ -148,7 +151,7 @@ class GameApp extends Component {
     });
     return (
       <div id="actions">
-        {this.state.connected ? (<div>Connected </div>) : (<div>Not Connected </div>)   } <br/>
+        { this.state.connected ? (<div>Connected </div>) : (<div>Not Connected </div>) } <br/>
         Your PeerJS ID is <span id="pid">{this.state.peerId}</span>
         <br/>
         Connect to a peer: <input type="text" id="rid"
