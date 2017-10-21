@@ -176,7 +176,7 @@ contract CardTable {
   }
 
   // retrieve a player from the registry
-  function getPlayer(address playerAccount) public constant returns(bool exists, uint256 playerId) {
+  function getPlayerId(address playerAccount) public constant returns(bool exists, uint256 playerId) {
     if (!playerExists(playerAccount)) {
       return (false, 0);
     }
@@ -244,7 +244,7 @@ contract CardTable {
     // add to nextGame
     bool exists;
     uint256 playerId;
-    (exists, playerId) = getPlayer(msg.sender);
+    (exists, playerId) = getPlayerId(msg.sender);
     require(exists);
     nextGame.players.push(playerId);
     WaitingForGame(msg.sender, buyInAmount);
