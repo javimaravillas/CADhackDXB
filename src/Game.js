@@ -117,7 +117,7 @@ class GameApp extends Component {
   getCardURL(cardNumber) {
       let cards = {10: "J", 11: "Q", 12: "K", 13: "A"}
       let suites = {1: "C", 2: "H", 3: "D", 4: "S"}
-      let card = (cardNumber % 13) + 1
+      let card = parseInt((cardNumber - 1) / 4) + 1
       card = card > 9 ? cards[card] : (card + 1) + ""
       let suite = suites[(cardNumber % 4) + 1]
 
